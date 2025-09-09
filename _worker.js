@@ -27,7 +27,7 @@ export default {
         const url = new URL(request.url);
         const UA = request.headers.get('User-Agent') || 'null';
         const userAgent = UA.toLowerCase();
-        const 必须base64的UA = [('CF-Workers-SUB').toLowerCase(), 'subconverter'];
+        const 需要订阅转换的UA = ['clash', 'meta', 'mihomo', 'sing-box', 'singbox'];
         if (url.pathname === '/sub') {
             const responseHeaders = {
                 "content-type": "text/plain; charset=utf-8",
@@ -35,7 +35,9 @@ export default {
                 "Profile-web-page-url": url.origin,
             };
 
-            if (必须base64的UA.some(必须 => userAgent.includes(必须))) {
+            if (需要订阅转换的UA.some(ua => userAgent.includes(ua)) && 
+                !userAgent.includes(('CF-Workers-SUB').toLowerCase()) && 
+                !userAgent.includes('subconverter')) {
                 subConverter = url.searchParams.get('subapi') || subConverter;
                 if (subConverter.includes("http://")) {
                     subConverter = subConverter.split("//")[1];

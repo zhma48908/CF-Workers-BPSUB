@@ -36,6 +36,15 @@ export default {
             };
 
             if (必须base64的UA.some(必须 => userAgent.includes(必须))) {
+                subConverter = url.searchParams.get('subapi') || subConverter;
+                if (subConverter.includes("http://")) {
+                    subConverter = subConverter.split("//")[1];
+                    subProtocol = 'http';
+                } else {
+                    subConverter = subConverter.split("//")[1] || subConverter;
+                }
+                subConfig = url.searchParams.get('subconfig') || subConfig;
+
                 let subConverterUrl = url.href;
                 responseHeaders["Content-Disposition"] = `attachment; filename*=utf-8''${encodeURIComponent(FileName)}`;
                 //console.log(subConverterUrl);
@@ -66,7 +75,9 @@ export default {
             }
 
             if (url.searchParams.has('ips') && url.searchParams.get('ips').trim() !== '') ips = await 整理成数组(url.searchParams.get('ips'));
-            proxyIP = url.searchParams.get('ips') || proxyIP;
+            proxyIP = url.searchParams.get('proxyip') || proxyIP;
+            const socks5 = (url.searchParams.has('socks5') && url.searchParams.get('socks5') != '') ? url.searchParams.get('socks5') : null;
+            const 全局socks5 = (url.searchParams.has('global')) ? true : false;
             const 标题 = `${url.hostname}:443#${FileName} 订阅到期时间 ${getDateString()}`;
             let add = [标题];
             let addapi = [];
@@ -123,7 +134,7 @@ export default {
                     const selected = uuid_json[randomIndex];
                     const uuid = selected.uuid;
                     const 伪装域名 = selected.host;
-                    const 最终路径 = selected.path;
+                    const 最终路径 = socks5 ? (全局socks5 ? `/snippets/gs5=${encodeURIComponent(socks5)}?ed=2560` : `/snippets/s5=${encodeURIComponent(socks5)}?ed=2560`) : `/snippets/ip=${encodeURIComponent(proxyIP)}?ed=2560`;
                     const 为烈士Link = 'vl' + 'es' + `s://${uuid}@${address}:${port}?security=tls&sni=${伪装域名}&type=ws&host=${伪装域名}&path=${encodeURIComponent(最终路径)}&allowInsecure=1&fragment=${encodeURIComponent('1,40-60,30-50,tlshello')}&encryption=none#${encodeURIComponent(addressid + 节点备注)}`;
                     return 为烈士Link;
                 }
@@ -147,7 +158,7 @@ export default {
                 });
             }
         } else {
-            return new Response('Hello World!');
+            return await subHtml(request);
         }
     }
 };
@@ -163,9 +174,9 @@ async function getSubData() {
             const queryString = rest.substring(queryStart + 1).split('#')[0];
             const params = new URLSearchParams(queryString);
             const host = params.get('host');
-            const path = `/snippets/ip=${encodeURIComponent(proxyIP)}?ed=2560`;
+            //const path = `/snippets/ip=${encodeURIComponent(proxyIP)}?ed=2560`;
             if (!host) return null;
-            return { uuid, host, path };
+            return { uuid, host };
         } catch (error) {
             return null;
         }
@@ -251,26 +262,9 @@ async function 整理优选列表(api) {
                         const columns = lines[i].split(',')[0];
                         if (columns) {
                             newapi += `${columns}:${测速端口}${节点备注 ? `#${节点备注}` : ''}\n`;
-                            if (api[index].includes('proxyip=true')) proxyIPPool.push(`${columns}:${测速端口}`);
                         }
                     }
                 } else {
-                    // 验证当前apiUrl是否带有'proxyip=true'
-                    if (api[index].includes('proxyip=true')) {
-                        // 如果URL带有'proxyip=true'，则将内容添加到proxyIPPool
-                        proxyIPPool = proxyIPPool.concat((await 整理(content)).map(item => {
-                            const baseItem = item.split('#')[0] || item;
-                            if (baseItem.includes(':')) {
-                                const port = baseItem.split(':')[1];
-                                if (!httpsPorts.includes(port)) {
-                                    return baseItem;
-                                }
-                            } else {
-                                return `${baseItem}:443`;
-                            }
-                            return null; // 不符合条件时返回 null
-                        }).filter(Boolean)); // 过滤掉 null 值
-                    }
                     // 将内容添加到newapi中
                     newapi += content + '\n';
                 }
@@ -283,7 +277,7 @@ async function 整理优选列表(api) {
         clearTimeout(timeout);
     }
 
-    const newAddressesapi = await 整理(newapi);
+    const newAddressesapi = await 整理成数组(newapi);
 
     // 返回处理后的结果
     return newAddressesapi;
@@ -304,4 +298,679 @@ function getDateString() {
     const minutes = String(utc8Time.getUTCMinutes()).padStart(2, '0');
     const seconds = String(utc8Time.getUTCSeconds()).padStart(2, '0');
     return `${year}/${month}/${day} ${hours}:${minutes}:${seconds}`;
+}
+
+async function subHtml(request) {
+    const url = new URL(request.url);
+
+    const HTML = `
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BPSUB 订阅生成器</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@keeex/qrcodejs-kx@1.0.2/qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 30%, #16213e  70%, #0f3460 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 255, 157, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(138, 43, 226, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(26, 32, 44, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 
+                0 25px 50px rgba(0,0,0,0.3),
+                0 0 0 1px rgba(0, 255, 255, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            position: relative;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 50%, #4a5568 100%);
+            color: #00ffff;
+            text-align: center;
+            padding: 40px 30px;
+            position: relative;
+            overflow: hidden;
+            border-bottom: 2px solid rgba(0, 255, 255, 0.3);
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-conic-gradient(
+                from 0deg,
+                transparent 0deg 90deg,
+                rgba(0, 255, 255, 0.1) 90deg 180deg
+            );
+            animation: rotate 20s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 15px;
+            font-weight: 800;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.8), 0 2px 4px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 1;
+            color: #ffffff;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+            color: #f7fafc;
+        }
+        
+        .form-container {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 35px;
+            background: rgba(45, 55, 72, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.05) 0%, rgba(138, 43, 226, 0.05) 100%);
+            border-radius: 15px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .section:hover::before {
+            opacity: 1;
+        }
+        
+        .section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 255, 255, 0.2);
+            border-color: rgba(0, 255, 255, 0.4);
+        }
+        
+        .section-title {
+            font-size: 1.4em;
+            color: #00ffff;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid rgba(0, 255, 255, 0.3);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .collapsible .section-title::after {
+            content: '▼';
+            font-size: 0.8em;
+            transition: transform 0.3s ease;
+            margin-left: auto;
+        }
+        
+        .collapsible.collapsed .section-title::after {
+            transform: rotate(-90deg);
+        }
+        
+        .section-content {
+            transition: all 0.3s ease;
+            overflow: visible;
+        }
+        
+        .collapsible.collapsed .section-content {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            padding-top: 0;
+            margin-top: 0;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #e2e8f0;
+            font-size: 1em;
+        }
+        
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 15px 18px;
+            border: 2px solid rgba(0, 255, 255, 0.2);
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            background: rgba(26, 32, 44, 0.9);
+            color: #e2e8f0;
+            position: relative;
+            z-index: 10;
+        }
+        
+        textarea:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #00ffff;
+            box-shadow: 0 0 0 4px rgba(0, 255, 255, 0.2), 0 0 20px rgba(0, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+        
+        textarea::placeholder, input[type="text"]::placeholder {
+            color: #718096;
+        }
+        
+        textarea {
+            height: 220px;
+            resize: vertical;
+            line-height: 1.5;
+        }
+        
+        .example {
+            background: linear-gradient(135deg, rgba(45, 55, 72, 0.8) 0%, rgba(26, 32, 44, 0.8) 100%);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 18px;
+            margin-top: 12px;
+            font-size: 13px;
+            color: #a0aec0;
+            white-space: pre-line;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            border-left: 4px solid #00ffff;
+        }
+        
+        .generate-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.2) 0%, rgba(138, 43, 226, 0.2) 100%);
+            color: #ffffff;
+            border: 2px solid rgba(0, 255, 255, 0.5);
+            border-radius: 12px;
+            font-size: 1.2em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 255, 255, 0.3);
+        }
+        
+        .generate-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.3) 0%, rgba(138, 43, 226, 0.3) 100%);
+            border-color: rgba(0, 255, 255, 0.8);
+            box-shadow: 0 8px 25px rgba(0, 255, 255, 0.5);
+        }
+        
+        .generate-btn:hover::before {
+            left: 100%;
+        }
+        
+        .generate-btn:active {
+            transform: translateY(0);
+        }
+        
+        .result-section {
+            margin-top: 35px;
+            display: none;
+            animation: fadeInUp 0.5s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .result-url {
+            background: linear-gradient(135deg, rgba(45, 55, 72, 0.8) 0%, rgba(26, 32, 44, 0.8) 100%);
+            border: 2px solid rgba(0, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 18px;
+            word-break: break-all;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            color: #e2e8f0;
+        }
+        
+        .result-url::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.1) 0%, rgba(138, 43, 226, 0.1) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .result-url:hover {
+            border-color: #00ffff;
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
+        }
+        
+        .result-url:hover::before {
+            opacity: 1;
+        }
+        
+        .copy-success {
+            background: linear-gradient(135deg, rgba(0, 255, 157, 0.2) 0%, rgba(0, 255, 255, 0.2) 100%) !important;
+            border-color: #00ff9d !important;
+            color: #00ff9d;
+            animation: successPulse 0.6s ease;
+        }
+        
+        @keyframes successPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+        
+        .qr-container {
+            margin-top: 25px;
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(45, 55, 72, 0.8) 0%, rgba(26, 32, 44, 0.8) 100%);
+            border: 2px solid rgba(0, 255, 255, 0.2);
+            border-radius: 12px;
+            display: none;
+        }
+        
+        .qr-title {
+            color: #00ffff;
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .qr-code {
+            display: inline-block;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 255, 255, 0.2);
+        }
+        
+        .qr-description {
+            color: #a0aec0;
+            font-size: 0.9em;
+            margin-top: 15px;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 25px;
+            color: #718096;
+            border-top: 1px solid rgba(0, 255, 255, 0.2);
+            background: rgba(26, 32, 44, 0.5);
+            font-weight: 500;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            
+            .form-container {
+                padding: 25px 20px;
+            }
+            
+            .header {
+                padding: 30px 20px;
+            }
+            
+            .header h1 {
+                font-size: 2.2em;
+            }
+            
+            .section {
+                padding: 20px;
+                margin-bottom: 25px;
+            }
+            
+            .section-title {
+                font-size: 1.2em;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .form-container {
+                padding: 20px 15px;
+            }
+            
+            .section {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 BPSUB</h1>
+            <p>Cloudflare Snipaste 订阅生成器</p>
+        </div>
+        
+        <div class="form-container">
+            <!-- 优选IP部分 -->
+            <div class="section">
+                <div class="section-title">🎯 优选IP设置</div>
+                <div class="form-group">
+                    <label for="ips">优选IP列表（每行一个地址）：</label>
+                    <textarea id="ips" placeholder="ADD示例：&#10;visa.cn#优选域名&#10;127.0.0.1:1234#CFnat&#10;[2606:4700::]:2053#IPv6&#10;&#10;注意：&#10;每行一个地址，格式为 地址:端口#备注&#10;IPv6地址需要用中括号括起来，如：[2606:4700::]:2053&#10;端口不写，默认为 443 端口，如：visa.cn#优选域名&#10;&#10;ADDAPI示例：&#10;https://raw.githubusercontent.com/cmliu/WorkerVless2sub/refs/heads/main/addressesapi.txt&#10;&#10;注意：ADDAPI直接添加直链即可"></textarea>
+                    <div class="example">
+📝 格式说明：
+• ADD: visa.cn#优选域名 或 127.0.0.1:1234#CFnat
+• IPv6: [2606:4700::]:2053#IPv6地址
+• ADDAPI: https://example.com/api.txt
+• 每行一个地址，端口默认为443
+                    </div>
+                </div>
+            </div>
+            
+            <!-- PROXYIP部分 -->
+            <div class="section collapsible collapsed">
+                <div class="section-title" onclick="toggleSection(this)">🔧 PROXYIP设置</div>
+                <div class="section-content">
+                    <div class="form-group">
+                        <label for="proxyip">代理IP地址：</label>
+                        <input type="text" id="proxyip" placeholder="proxyip.fxxk.dedyn.io:443" value="">
+                        <div class="example">
+🌐 默认代理IP地址，用于生成VLESS链接的路径参数
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 订阅转换设置 -->
+            <div class="section collapsible collapsed">
+                <div class="section-title" onclick="toggleSection(this)">⚙️ 订阅转换设置</div>
+                <div class="section-content">
+                    <div class="form-group">
+                        <label for="subapi">订阅转换后端：</label>
+                        <input type="text" id="subapi" placeholder="https://subapi.cmliussss.net" value="">
+                        <div class="example">
+🔄 用于将生成的VLESS链接转换为Clash/SingBox等格式的后端服务
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="subconfig">订阅转换配置文件：</label>
+                        <input type="text" id="subconfig" placeholder="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Mini.ini" value="">
+                        <div class="example">
+📋 订阅转换时使用的配置文件URL，定义规则和策略
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 生成按钮 -->
+            <button class="generate-btn" onclick="generateSubscription()">
+                <span>🎉 生成订阅链接</span>
+            </button>
+            
+            <!-- 结果显示 -->
+            <div class="result-section" id="result-section">
+                <div class="section-title">📋 订阅链接（点击复制）</div>
+                <div class="result-url" id="result-url" onclick="copyToClipboard()"></div>
+                
+                <!-- 二维码显示 -->
+                <div class="qr-container" id="qr-container">
+                    <div class="qr-title">📱 手机扫码订阅</div>
+                    <div class="qr-code" id="qrcode"></div>
+                    <div class="qr-description">使用手机扫描二维码快速添加订阅</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>© 2025 BPSUB - Powered by Cloudflare Snipaste</p>
+        </div>
+    </div>
+    
+    <script>
+        function generateSubscription() {
+            const ips = document.getElementById('ips').value.trim();
+            const proxyip = document.getElementById('proxyip').value.trim();
+            const subapi = document.getElementById('subapi').value.trim();
+            const subconfig = document.getElementById('subconfig').value.trim();
+            
+            // 获取当前域名
+            const currentDomain = window.location.host;
+            let url = \`https://\${currentDomain}/sub\`;
+            
+            const params = new URLSearchParams();
+            
+            // 处理优选IP
+            if (ips) {
+                // 将每行转换为用|分隔的格式
+                const ipsArray = ips.split('\\n').filter(line => line.trim()).map(line => line.trim());
+                if (ipsArray.length > 0) {
+                    params.append('ips', ipsArray.join('|'));
+                }
+            }
+            
+            // 处理PROXYIP
+            if (proxyip) {
+                params.append('proxyip', proxyip);
+            }
+            
+            // 处理订阅转换后端
+            if (subapi) {
+                params.append('subapi', subapi);
+            }
+            
+            // 处理订阅转换配置
+            if (subconfig) {
+                params.append('subconfig', subconfig);
+            }
+            
+            // 组合最终URL
+            const queryString = params.toString();
+            if (queryString) {
+                url += '?' + queryString;
+            }
+            
+            // 显示结果
+            const resultSection = document.getElementById('result-section');
+            const resultUrl = document.getElementById('result-url');
+            const qrContainer = document.getElementById('qr-container');
+            
+            resultUrl.textContent = url;
+            resultSection.style.display = 'block';
+            
+            // 生成二维码
+            generateQRCode(url);
+            
+            // 显示二维码容器
+            qrContainer.style.display = 'block';
+            
+            // 滚动到结果区域
+            resultSection.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function copyToClipboard() {
+            const resultUrl = document.getElementById('result-url');
+            const url = resultUrl.textContent;
+            
+            // 使用 Clipboard API
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(url).then(() => {
+                    showCopySuccess();
+                }).catch(err => {
+                    // 降级到传统方法
+                    fallbackCopyTextToClipboard(url);
+                });
+            } else {
+                // 降级到传统方法
+                fallbackCopyTextToClipboard(url);
+            }
+        }
+        
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            
+            // 避免在iOS上的滚动问题
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+            
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                showCopySuccess();
+            } catch (err) {
+                alert('复制失败，请手动复制链接');
+            }
+            
+            document.body.removeChild(textArea);
+        }
+        
+        function showCopySuccess() {
+            const resultUrl = document.getElementById('result-url');
+            const originalClass = resultUrl.className;
+            const originalText = resultUrl.textContent;
+            
+            resultUrl.classList.add('copy-success');
+            resultUrl.textContent = '✅ 复制成功！链接已复制到剪贴板';
+            
+            setTimeout(() => {
+                resultUrl.className = originalClass;
+                resultUrl.textContent = originalText;
+            }, 2000);
+        }
+        
+        // 生成二维码
+        function generateQRCode(url) {
+            const qrCodeElement = document.getElementById('qrcode');
+            
+            // 清空之前的二维码
+            qrCodeElement.innerHTML = '';
+            
+            // 生成新的二维码
+            try {
+                const qr = new QRCode(qrCodeElement, {
+                    text: url,
+                    width: 200,
+                    height: 200,
+                    colorDark: "#1a202c",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+            } catch (error) {
+                console.error('生成二维码失败:', error);
+                qrCodeElement.innerHTML = '<div style="color: #ff6b6b; padding: 20px;">二维码生成失败</div>';
+            }
+        }
+        
+        // 折叠功能
+        function toggleSection(element) {
+            const section = element.parentElement;
+            section.classList.toggle('collapsed');
+        }
+        
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 可以在这里添加一些初始化逻辑
+            console.log('BPSUB 订阅生成器已加载 - 科技范版本');
+        });
+    </script>
+</body>
+</html>`;
+    return new Response(HTML, {
+        headers: {
+            "content-type": "text/html;charset=UTF-8",
+        },
+    });
 }

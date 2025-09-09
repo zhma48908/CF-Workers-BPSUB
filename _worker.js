@@ -1184,12 +1184,14 @@ async function subHtml(request) {
             <!-- 优选IP部分 -->
             <div class="section">
                 <div class="section-title">🎯 优选IP设置</div>
+                <div style="background: rgba(0, 255, 255, 0.1); border: 1px solid rgba(0, 255, 255, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 20px; font-size: 0.9em; color: #e2e8f0;">
+                    💡 <strong>智能缓存提示：</strong> 您的输入将自动保存到浏览器本地缓存中，下次访问时会自动恢复，让您的配置更加便捷持久。
+                </div>
                 <div class="form-group">
                     <label for="ips">优选IP列表（每行一个地址）：</label>
-                    <textarea id="ips" placeholder="ADD示例：&#10;visa.cn#优选域名&#10;127.0.0.1:1234#CFnat&#10;[2606:4700::]:2053#IPv6&#10;&#10;注意：&#10;每行一个地址，格式为 地址:端口#备注&#10;IPv6地址需要用中括号括起来，如：[2606:4700::]:2053&#10;端口不写，默认为 443 端口，如：visa.cn#优选域名&#10;&#10;ADDAPI示例：&#10;https://raw.githubusercontent.com/cmliu/WorkerVless2sub/refs/heads/main/addressesapi.txt&#10;&#10;注意：ADDAPI直接添加直链即可"></textarea>
-                    <div class="example">
-📝 格式说明：
-• ADD: visa.cn#优选域名 或 127.0.0.1:1234#CFnat
+                    <textarea id="ips" placeholder="ADD示例：&#10;www.visa.cn#优选域名&#10;127.0.0.1:1234#CFnat&#10;[2606:4700::]:2053#IPv6&#10;&#10;注意：&#10;每行一个地址，格式为 地址:端口#备注&#10;IPv6地址需要用中括号括起来，如：[2606:4700::]:2053&#10;端口不写，默认为 443 端口，如：visa.cn#优选域名&#10;&#10;ADDAPI示例：&#10;https://raw.githubusercontent.com/cmliu/WorkerVless2sub/refs/heads/main/addressesapi.txt&#10;&#10;注意：ADDAPI直接添加直链即可"></textarea>
+                    <div class="example">📝 格式说明：
+• 域名&IPv4: www.visa.cn#优选域名 或 127.0.0.1:1234#CFnat
 • IPv6: [2606:4700::]:2053#IPv6地址
 • ADDAPI: https://example.com/api.txt
 • 每行一个地址，端口默认为443
@@ -1287,15 +1289,13 @@ async function subHtml(request) {
                     <div class="form-group">
                         <label for="subapi">订阅转换后端：</label>
                         <input type="text" id="subapi" placeholder="https://subapi.cmliussss.net" value="">
-                        <div class="example">
-🔄 用于将生成的VLESS链接转换为Clash/SingBox等格式的后端服务
+                        <div class="example">🔄 用于将生成的VLESS链接转换为Clash/SingBox等格式的后端服务
                         </div>
                     </div>
                     <div class="form-group">
                         <label for="subconfig">订阅转换配置文件：</label>
                         <input type="text" id="subconfig" placeholder="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Mini.ini" value="">
-                        <div class="example">
-📋 订阅转换时使用的配置文件URL，定义规则和策略
+                        <div class="example">📋 订阅转换时使用的配置文件URL，定义规则和策略
                         </div>
                     </div>
                 </div>
@@ -1327,6 +1327,105 @@ async function subHtml(request) {
     </div>
     
     <script>
+        // 本地存储配置
+        const STORAGE_KEY = 'bpsub_form_data';
+        
+        // 保存表单数据到localStorage
+        function saveFormData() {
+            const formData = {
+                ips: document.getElementById('ips').value,
+                proxyip: document.getElementById('proxyip').value,
+                socks5: document.getElementById('socks5').value,
+                subapi: document.getElementById('subapi').value,
+                subconfig: document.getElementById('subconfig').value,
+                proxyMode: document.querySelector('input[name="proxyMode"]:checked')?.value || 'proxyip',
+                globalSocks5: document.getElementById('globalSocks5').checked,
+                timestamp: Date.now()
+            };
+            
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+                console.log('表单数据已保存到本地缓存');
+            } catch (error) {
+                console.error('保存表单数据失败:', error);
+            }
+        }
+        
+        // 从localStorage加载表单数据
+        function loadFormData() {
+            try {
+                const savedData = localStorage.getItem(STORAGE_KEY);
+                if (!savedData) {
+                    console.log('未找到缓存的表单数据');
+                    return;
+                }
+                
+                const formData = JSON.parse(savedData);
+                console.log('加载缓存的表单数据:', formData);
+                
+                // 填充表单字段
+                if (formData.ips) document.getElementById('ips').value = formData.ips;
+                if (formData.proxyip) document.getElementById('proxyip').value = formData.proxyip;
+                if (formData.socks5) document.getElementById('socks5').value = formData.socks5;
+                if (formData.subapi) document.getElementById('subapi').value = formData.subapi;
+                if (formData.subconfig) document.getElementById('subconfig').value = formData.subconfig;
+                
+                // 设置代理模式
+                if (formData.proxyMode) {
+                    const proxyModeRadio = document.querySelector('input[name="proxyMode"][value="' + formData.proxyMode + '"]');
+                    if (proxyModeRadio) {
+                        proxyModeRadio.checked = true;
+                        toggleProxyMode();
+                    }
+                }
+                
+                // 设置全局Socks5选项
+                if (formData.globalSocks5 !== undefined) {
+                    document.getElementById('globalSocks5').checked = formData.globalSocks5;
+                    // 手动触发change事件更新样式
+                    document.getElementById('globalSocks5').dispatchEvent(new Event('change'));
+                }
+                
+                console.log('表单数据加载完成');
+            } catch (error) {
+                console.error('加载表单数据失败:', error);
+            }
+        }
+        
+
+        
+        // 设置表单字段的自动保存事件监听器
+        function setupAutoSave() {
+            const fields = ['ips', 'proxyip', 'socks5', 'subapi', 'subconfig'];
+            
+            // 为文本输入字段添加事件监听
+            fields.forEach(fieldId => {
+                const element = document.getElementById(fieldId);
+                if (element) {
+                    // 使用防抖函数避免频繁保存
+                    let saveTimeout;
+                    const debouncedSave = () => {
+                        clearTimeout(saveTimeout);
+                        saveTimeout = setTimeout(saveFormData, 1000); // 1秒后保存
+                    };
+                    
+                    element.addEventListener('input', debouncedSave);
+                    element.addEventListener('change', saveFormData);
+                }
+            });
+            
+            // 为单选框添加事件监听
+            document.querySelectorAll('input[name="proxyMode"]').forEach(radio => {
+                radio.addEventListener('change', saveFormData);
+            });
+            
+            // 为复选框添加事件监听
+            const globalSocks5Checkbox = document.getElementById('globalSocks5');
+            if (globalSocks5Checkbox) {
+                globalSocks5Checkbox.addEventListener('change', saveFormData);
+            }
+        }
+        
         function generateSubscription() {
             const ips = document.getElementById('ips').value.trim();
             const proxyip = document.getElementById('proxyip').value.trim();
@@ -1336,6 +1435,9 @@ async function subHtml(request) {
             
             // 获取选择的代理模式
             const proxyMode = document.querySelector('input[name="proxyMode"]:checked').value;
+            
+            // 保存当前表单数据
+            saveFormData();
             
             // 获取当前域名
             const currentDomain = window.location.host;
@@ -1603,6 +1705,14 @@ async function subHtml(request) {
         
         // 页面加载完成后的初始化
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('页面加载完成，开始初始化...');
+            
+            // 首先加载缓存的表单数据
+            loadFormData();
+            
+            // 设置自动保存功能
+            setupAutoSave();
+            
             // 初始化单选框状态
             document.querySelectorAll('input[name="proxyMode"]').forEach(radio => {
                 const radioOption = radio.closest('.radio-option');

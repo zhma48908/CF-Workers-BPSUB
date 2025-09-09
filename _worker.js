@@ -4,7 +4,7 @@ let subConfig = 'https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/
 let subProtocol = 'https';
 let SUBUpdateTime = 6; // 单位小时
 let proxyIP = 'proxyip.fxxk.dedyn.io:443';
-let ips = ['3Q.bestip_one.cf.090227.xyz#感谢白嫖哥t.me/bestip_one'];
+let ips = ['3Q.bestip-one.cf.090227.xyz#感谢白嫖哥t.me/bestip_one'];
 let FileName = 'BPSUB';
 let EndPS = '';
 const regex = /^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|\[.*\]):?(\d+)?#?(.*)?$/;
@@ -185,7 +185,7 @@ export default {
                     const selected = uuid_json[randomIndex];
                     const uuid = selected.uuid;
                     const 伪装域名 = selected.host;
-                    const 最终路径 = socks5 ? (全局socks5 ? `/snippets/gs5=${encodeURIComponent(socks5)}?ed=2560` : `/snippets/s5=${encodeURIComponent(socks5)}?ed=2560`) : `/snippets/ip=${encodeURIComponent(proxyIP)}?ed=2560`;
+                    const 最终路径 = socks5 ? (全局socks5 ? `/snippets/gs5=${socks5}?ed=2560` : `/snippets/s5=${socks5}?ed=2560`) : `/snippets/ip=${proxyIP}?ed=2560`;
                     const 为烈士Link = 'vl' + 'es' + `s://${uuid}@${address}:${port}?security=tls&sni=${伪装域名}&type=ws&host=${伪装域名}&path=${encodeURIComponent(最终路径)}&allowInsecure=1&fragment=${encodeURIComponent('1,40-60,30-50,tlshello')}&encryption=none#${encodeURIComponent(addressid + 节点备注)}`;
                     return 为烈士Link;
                 }

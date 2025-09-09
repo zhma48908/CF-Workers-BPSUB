@@ -139,8 +139,8 @@ export default {
                 }
             }).join('\n');
 
-            const 返回订阅内容 = userAgent.includes(('Mozilla/5.0').toLowerCase()) ? responseBody : btoa(responseBody);
-            if (!userAgent.includes(('Mozilla/5.0').toLowerCase())) responseHeaders["Content-Disposition"] = `attachment; filename*=utf-8''${encodeURIComponent(FileName)}`;
+            const 返回订阅内容 = userAgent.includes(('Mozilla').toLowerCase()) ? responseBody : btoa(responseBody);
+            if (!userAgent.includes(('Mozilla').toLowerCase())) responseHeaders["Content-Disposition"] = `attachment; filename*=utf-8''${encodeURIComponent(FileName)}`;
             return new Response(返回订阅内容, {
                 headers: { 'Content-Type': 'text/plain' },
             });
@@ -314,6 +314,15 @@ async function subHtml(request) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@keeex/qrcodejs-kx@1.0.2/qrcode.min.js"></script>
     <style>
+        :root {
+            --primary-color: #00ffff;
+            --text-primary: #ffffff;
+            --text-secondary: #e2e8f0;
+            --bg-secondary: rgba(45, 55, 72, 0.8);
+            --border-radius-sm: 12px;
+            --warning-color: #ffc107;
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -786,6 +795,70 @@ async function subHtml(request) {
                 padding: 15px;
             }
         }
+        
+        /* ProxyIP 说明相关样式 */
+        .code-block {
+            padding: 16px 20px;
+            border-radius: var(--border-radius-sm);
+            margin: 16px 0;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .proxy-flow-container {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: var(--border-radius-sm);
+            margin: 20px 0;
+        }
+        
+        .proxy-flow {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        
+        .proxy-step {
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        .proxy-step-1 { background: #e3f2fd; }
+        .proxy-step-2 { background: #f3e5f5; }
+        .proxy-step-3 { background: #e8f5e8; }
+        
+        .proxy-step-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .proxy-step-1 .proxy-step-title { color: #1976d2; }
+        .proxy-step-2 .proxy-step-title { color: #7b1fa2; }
+        .proxy-step-3 .proxy-step-title { color: #388e3c; }
+        
+        .proxy-step-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        .proxy-arrow {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+        }
+        
+        .proxy-explanation {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin: 0;
+        }
     </style>
 </head>
 <body>
@@ -819,13 +892,53 @@ async function subHtml(request) {
             
             <!-- PROXYIP部分 -->
             <div class="section collapsible collapsed">
-                <div class="section-title" onclick="toggleSection(this)">🔧 PROXYIP设置</div>
+                <div class="section-title" onclick="toggleSection(this)">🔧 落地IP设置</div>
                 <div class="section-content">
                     <div class="form-group">
-                        <label for="proxyip">代理IP地址：</label>
+                        <label for="proxyip">ProxyIP地址：</label>
                         <input type="text" id="proxyip" placeholder="proxyip.fxxk.dedyn.io:443" value="">
-                        <div class="example">
-🌐 默认代理IP地址，用于生成VLESS链接的路径参数
+                        
+                        <!-- ProxyIP 详细说明 -->
+                        <div style="margin-top: 24px;">
+                            <h3 style="color: var(--text-primary); margin: 24px 0 16px;">📖 ProxyIP 概念</h3>
+                            <p style="margin-bottom: 16px; line-height: 1.8; color: var(--text-secondary);">
+                                在 Cloudflare Workers 环境中，ProxyIP 特指那些能够成功代理连接到 Cloudflare 服务的第三方 IP 地址。
+                            </p>
+                            
+                            <h3 style="color: var(--text-primary); margin: 24px 0 16px;">🔧 技术原理</h3>
+                            <p style="margin-bottom: 16px; line-height: 1.8; color: var(--text-secondary);">
+                                根据 Cloudflare Workers 的 <a href="https://developers.cloudflare.com/workers/runtime-apis/tcp-sockets/" target="_blank" style="color: var(--primary-color); text-decoration: none;">TCP Sockets 官方文档</a> 说明，存在以下技术限制：
+                            </p>
+                            
+                            <div class="code-block" style="background: #fff3cd; color: #856404; border-left: 4px solid var(--warning-color);">
+                                ⚠️ Outbound TCP sockets to <a href="https://www.cloudflare.com/ips/" target="_blank" >Cloudflare IP ranges ↗</a>  are temporarily blocked, but will be re-enabled shortly.
+                            </div>
+                            
+                            <p style="margin: 16px 0; line-height: 1.8; color: var(--text-secondary);">
+                                这意味着 Cloudflare Workers 无法直接连接到 Cloudflare 自有的 IP 地址段。为了解决这个限制，需要借助第三方云服务商的服务器作为"跳板"：
+                            </p>
+                            
+                            <div class="proxy-flow-container">
+                                <div class="proxy-flow">
+                                    <div class="proxy-step proxy-step-1">
+                                        <div class="proxy-step-title">Cloudflare Workers</div>
+                                        <div class="proxy-step-desc">发起请求</div>
+                                    </div>
+                                    <div class="proxy-arrow">→</div>
+                                    <div class="proxy-step proxy-step-2">
+                                        <div class="proxy-step-title">ProxyIP 服务器</div>
+                                        <div class="proxy-step-desc">第三方代理</div>
+                                    </div>
+                                    <div class="proxy-arrow">→</div>
+                                    <div class="proxy-step proxy-step-3">
+                                        <div class="proxy-step-title">Cloudflare 服务</div>
+                                        <div class="proxy-step-desc">目标服务</div>
+                                    </div>
+                                </div>
+                                <p class="proxy-explanation">
+                                    通过第三方服务器反向代理 Cloudflare 的 443 端口，实现 Workers 对 Cloudflare 服务的访问
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -901,7 +1014,9 @@ async function subHtml(request) {
             
             // 处理PROXYIP
             if (proxyip) {
-                params.append('proxyip', proxyip);
+                // 智能处理 proxyip 格式
+                let processedProxyip = processProxyIP(proxyip);
+                params.append('proxyip', processedProxyip);
             }
             
             // 处理订阅转换后端
@@ -1020,6 +1135,27 @@ async function subHtml(request) {
         function toggleSection(element) {
             const section = element.parentElement;
             section.classList.toggle('collapsed');
+        }
+        
+        // 智能处理 proxyip 格式的函数
+        function processProxyIP(input) {
+            // 如果输入为空，返回原值
+            if (!input) return input;
+            
+            // 如果已经包含冒号，直接返回
+            if (input.includes(':')) {
+                return input;
+            }
+            
+            // 检查是否包含 .tp 模式
+            const tpMatch = input.match(/\\.tp(\\d+)\\./);
+            if (tpMatch) {
+                const port = tpMatch[1];
+                return \`\${input}:\${port}\`;
+            }
+            
+            // 如果都不匹配，返回原值
+            return input;
         }
         
         // 页面加载完成后的初始化

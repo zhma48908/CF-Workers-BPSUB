@@ -67,7 +67,7 @@ export default {
 
                     let subConverterContent = await subConverterResponse.text();
 
-                    return new Response(subConverterContent, { status: 200, responseHeaders });
+                    return new Response(subConverterContent, { status: 200, headers: responseHeaders });
                 } catch (error) {
                     return new Response(`Error: ${error.message}`, {
                         status: 500,
@@ -143,9 +143,7 @@ export default {
 
             const 返回订阅内容 = userAgent.includes(('Mozilla').toLowerCase()) ? responseBody : btoa(responseBody);
             if (!userAgent.includes(('Mozilla').toLowerCase())) responseHeaders["Content-Disposition"] = `attachment; filename*=utf-8''${encodeURIComponent(FileName)}`;
-            return new Response(返回订阅内容, {
-                headers: { 'Content-Type': 'text/plain' },
-            });
+            return new Response(返回订阅内容, { headers: responseHeaders });
         } else if (url.pathname === '/uuid.json') {
             try {
                 const result = await getSubData();

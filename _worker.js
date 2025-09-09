@@ -478,6 +478,7 @@ async function subHtml(request) {
             border-radius: 15px;
             opacity: 0;
             transition: opacity 0.3s ease;
+            pointer-events: none;
         }
         
         .section:hover::before {
@@ -540,6 +541,9 @@ async function subHtml(request) {
             font-weight: 600;
             color: #e2e8f0;
             font-size: 1em;
+            min-height: 24px;
+            display: flex;
+            align-items: center;
         }
         
         textarea, input[type="text"] {
@@ -985,13 +989,29 @@ async function subHtml(request) {
             justify-content: space-between;
             align-items: center;
             margin-bottom: 10px;
-            flex-wrap: wrap;
-            gap: 15px;
+            flex-wrap: nowrap;
+            gap: 10px;
+            position: relative;
+            z-index: 5;
+            height: 24px;
+            min-height: 24px;
+            max-height: 24px;
+            overflow: hidden;
         }
         
         .socks5-header label[for="socks5"] {
             margin-bottom: 0;
             flex-shrink: 0;
+            user-select: text;
+            position: relative;
+            z-index: 10;
+            font-size: 1em;
+            display: flex;
+            align-items: center;
+            height: 24px;
+            min-height: 24px;
+            align-self: center;
+            line-height: 1;
         }
         
         /* 行内复选框样式 */
@@ -1005,6 +1025,13 @@ async function subHtml(request) {
             transition: all 0.3s ease;
             background: transparent;
             font-size: 0.9em;
+            position: relative;
+            z-index: 10;
+            height: 24px;
+            min-height: 24px;
+            max-height: 24px;
+            align-self: center;
+            line-height: 1;
         }
         
         .checkbox-option-inline:hover {
@@ -1017,6 +1044,11 @@ async function subHtml(request) {
             width: 14px;
             height: 14px;
             accent-color: var(--primary-color);
+            cursor: pointer;
+            pointer-events: auto;
+            position: relative;
+            z-index: 10;
+            flex-shrink: 0;
         }
         
         .checkbox-option-inline input[type="checkbox"]:checked + .checkbox-label-inline {
@@ -1034,21 +1066,35 @@ async function subHtml(request) {
             font-weight: 500;
             transition: all 0.3s ease;
             white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            z-index: 10;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            height: 24px;
         }
         
         /* 响应式处理 */
         @media (max-width: 500px) {
             .socks5-header {
-                flex-direction: column;
-                align-items: flex-start;
+                flex-direction: row;
+                align-items: center;
+                flex-wrap: wrap;
+                height: auto;
+                min-height: 24px;
+                max-height: none;
             }
             
             .socks5-header label[for="socks5"] {
-                align-self: flex-start;
+                align-self: center;
+                margin-bottom: 5px;
             }
             
             .checkbox-option-inline {
-                align-self: flex-end;
+                align-self: center;
+                margin-top: 5px;
             }
         }
     </style>
@@ -1112,9 +1158,9 @@ async function subHtml(request) {
                         <!-- 标题行：Socks5代理 + 全局代理选项 -->
                         <div class="socks5-header">
                             <label for="socks5">Socks5代理：</label>
-                            <label class="checkbox-option-inline">
+                            <label class="checkbox-option-inline" for="globalSocks5">
                                 <input type="checkbox" id="globalSocks5">
-                                <span class="checkbox-label-inline">🌍 全局代理</span>
+                                <span class="checkbox-label-inline">🌍 启用全局代理</span>
                             </label>
                         </div>
                         <input type="text" id="socks5" placeholder="user:password@127.0.0.1:1080 或 127.0.0.1:1080" value="">
@@ -1488,7 +1534,14 @@ async function subHtml(request) {
             // 初始化复选框事件监听
             const globalSocks5Checkbox = document.getElementById('globalSocks5');
             if (globalSocks5Checkbox) {
+                // 初始化状态
+                const checkboxOption = globalSocks5Checkbox.closest('.checkbox-option') || globalSocks5Checkbox.closest('.checkbox-option-inline');
+                if (checkboxOption && globalSocks5Checkbox.checked) {
+                    checkboxOption.classList.add('checked');
+                }
+                
                 globalSocks5Checkbox.addEventListener('change', function() {
+                    console.log('复选框状态改变:', this.checked); // 调试日志
                     // 支持两种复选框样式
                     const checkboxOption = this.closest('.checkbox-option') || this.closest('.checkbox-option-inline');
                     if (checkboxOption) {
@@ -1499,9 +1552,22 @@ async function subHtml(request) {
                         }
                     }
                 });
+                
+                // 为label容器添加点击事件支持（备用方案）
+                const checkboxLabel = globalSocks5Checkbox.closest('.checkbox-option-inline');
+                if (checkboxLabel) {
+                    checkboxLabel.addEventListener('click', function(e) {
+                        console.log('点击了复选框容器', e.target); // 调试日志
+                        // 如果点击的不是复选框本身，则手动切换复选框状态
+                        if (e.target !== globalSocks5Checkbox) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            globalSocks5Checkbox.checked = !globalSocks5Checkbox.checked;
+                            globalSocks5Checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                    });
+                }
             }
-            
-            console.log('BPSUB 订阅生成器已加载 - 科技范版本');
         });
     </script>
 </body>

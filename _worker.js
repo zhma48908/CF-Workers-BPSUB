@@ -357,7 +357,7 @@ function getDateString() {
     // 转换为 UTC+8
     const utc8Time = new Date(now.getTime() + (8 * 60 * 60 * 1000));
     // 加 24 小时
-    utc8Time.setTime(utc8Time.getTime() + (24 * 60 * 60 * 1000));
+    utc8Time.setTime(utc8Time.getTime() + (24 * 60 * 60 * 1000 * 30));// 30天有效期
     // 格式化为 YYYY/MM/DD HH:MM:SS
     const year = utc8Time.getUTCFullYear();
     const month = String(utc8Time.getUTCMonth() + 1).padStart(2, '0');

@@ -1254,7 +1254,7 @@ async function subHtml(request) {
                         </div>
                         
                         <p style="margin: 16px 0; line-height: 1.8; color: var(--text-secondary);">
-                            这意味着 Cloudflare 开发无法直接连接到 Cloudflare 自有的 IP 地址段。为了解决这个限制，需要借助第三方云服务商的服务器作为"跳板"：
+                            这意味着 Cloudflare 开发环境无法直接连接到 Cloudflare 自有的 IP 地址段。为了解决这个限制，需要借助第三方云服务商的服务器作为"跳板"：
                         </p>
                         
                         <div class="proxy-flow-container">

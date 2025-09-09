@@ -845,8 +845,12 @@ async function subHtml(request) {
         
         .proxy-step-desc {
             font-size: 0.9rem;
-            color: var(--text-secondary);
         }
+        
+        /* 修复每个步骤描述文字的颜色 */
+        .proxy-step-1 .proxy-step-desc { color: #1565c0; }
+        .proxy-step-2 .proxy-step-desc { color: #6a1b9a; }
+        .proxy-step-3 .proxy-step-desc { color: #2e7d32; }
         
         .proxy-arrow {
             color: var(--primary-color);
@@ -858,6 +862,19 @@ async function subHtml(request) {
             color: var(--text-secondary);
             font-size: 0.95rem;
             margin: 0;
+        }
+        
+        /* 修复链接点击问题 */
+        .section-content a {
+            position: relative;
+            z-index: 100;
+            pointer-events: auto;
+            transition: all 0.3s ease;
+        }
+        
+        .section-content a:hover {
+            color: #ffffff !important;
+            text-decoration: underline !important;
         }
     </style>
 </head>
@@ -902,12 +919,12 @@ async function subHtml(request) {
                         <div style="margin-top: 24px;">
                             <h3 style="color: var(--text-primary); margin: 24px 0 16px;">📖 ProxyIP 概念</h3>
                             <p style="margin-bottom: 16px; line-height: 1.8; color: var(--text-secondary);">
-                                在 Cloudflare Workers 环境中，ProxyIP 特指那些能够成功代理连接到 Cloudflare 服务的第三方 IP 地址。
+                                在 Cloudflare 开发环境中，ProxyIP 特指那些能够成功代理连接到 Cloudflare 服务的第三方 IP 地址。
                             </p>
                             
                             <h3 style="color: var(--text-primary); margin: 24px 0 16px;">🔧 技术原理</h3>
                             <p style="margin-bottom: 16px; line-height: 1.8; color: var(--text-secondary);">
-                                根据 Cloudflare Workers 的 <a href="https://developers.cloudflare.com/workers/runtime-apis/tcp-sockets/" target="_blank" style="color: var(--primary-color); text-decoration: none;">TCP Sockets 官方文档</a> 说明，存在以下技术限制：
+                                根据 Cloudflare 开发文档的 <a href="https://developers.cloudflare.com/workers/runtime-apis/tcp-sockets/" target="_blank" style="color: var(--primary-color); text-decoration: none;">TCP Sockets 官方文档</a> 说明，存在以下技术限制：
                             </p>
                             
                             <div class="code-block" style="background: #fff3cd; color: #856404; border-left: 4px solid var(--warning-color);">
@@ -915,7 +932,7 @@ async function subHtml(request) {
                             </div>
                             
                             <p style="margin: 16px 0; line-height: 1.8; color: var(--text-secondary);">
-                                这意味着 Cloudflare Workers 无法直接连接到 Cloudflare 自有的 IP 地址段。为了解决这个限制，需要借助第三方云服务商的服务器作为"跳板"：
+                                这意味着 Cloudflare 开发无法直接连接到 Cloudflare 自有的 IP 地址段。为了解决这个限制，需要借助第三方云服务商的服务器作为"跳板"：
                             </p>
                             
                             <div class="proxy-flow-container">
@@ -936,7 +953,7 @@ async function subHtml(request) {
                                     </div>
                                 </div>
                                 <p class="proxy-explanation">
-                                    通过第三方服务器反向代理 Cloudflare 的 443 端口，实现 Workers 对 Cloudflare 服务的访问
+                                    通过第三方服务器反向代理 Cloudflare 的 443 端口，实现对 Cloudflare 服务的访问
                                 </p>
                             </div>
                         </div>

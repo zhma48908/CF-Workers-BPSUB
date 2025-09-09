@@ -146,11 +146,14 @@ export default {
                 const match = addressid.match(regex);
                 if (!match) {
                     if (address.includes(':') && address.includes('#')) {
-                        const parts = address.split(':');
-                        address = parts[0];
-                        const subParts = parts[1].split('#');
-                        port = subParts[0];
-                        addressid = subParts[1];
+                        // 找到第一个冒号和第一个井号的位置
+                        const colonIndex = address.indexOf(':');
+                        const hashIndex = address.indexOf('#');
+                        
+                        const originalAddress = address;
+                        address = originalAddress.substring(0, colonIndex);
+                        port = originalAddress.substring(colonIndex + 1, hashIndex);
+                        addressid = originalAddress.substring(hashIndex + 1);
                     } else if (address.includes(':')) {
                         const parts = address.split(':');
                         address = parts[0];
@@ -161,7 +164,11 @@ export default {
                         addressid = parts[1];
                     }
 
-                    if (addressid.includes(':')) addressid = addressid.split(':')[0];
+                    // 只有当 addressid 看起来像 "address:port" 格式时才进行分割
+                    // 避免截断包含时间的标题（如 "05:05:07"）
+                    if (addressid.includes(':') && /^\S+:\d+$/.test(addressid)) {
+                        addressid = addressid.split(':')[0];
+                    }
 
                 } else {
                     address = match[1];

@@ -446,10 +446,16 @@ async function subHtml(request) {
             border-bottom: 2px solid rgba(0, 255, 255, 0.3);
         }
         
-        .social-link {
+        .social-links-container {
             position: absolute;
             top: 25px;
             right: 30px;
+            display: flex;
+            gap: 12px;
+            z-index: 10;
+        }
+        
+        .social-link {
             color: #00ffff;
             text-decoration: none;
             display: flex;
@@ -462,7 +468,6 @@ async function subHtml(request) {
             transition: all 0.3s ease;
             background: rgba(26, 32, 44, 0.8);
             backdrop-filter: blur(10px);
-            z-index: 10;
         }
         
         .social-link:hover {
@@ -845,6 +850,21 @@ async function subHtml(request) {
                 font-size: 2.2em;
             }
             
+            .social-links-container {
+                right: 20px;
+                gap: 8px;
+            }
+            
+            .social-link {
+                width: 36px;
+                height: 36px;
+            }
+            
+            .social-link svg {
+                width: 18px;
+                height: 18px;
+            }
+            
             .section {
                 padding: 20px;
                 margin-bottom: 25px;
@@ -858,6 +878,22 @@ async function subHtml(request) {
         @media (max-width: 480px) {
             .header h1 {
                 font-size: 1.8em;
+            }
+            
+            .social-links-container {
+                right: 15px;
+                top: 20px;
+                gap: 6px;
+            }
+            
+            .social-link {
+                width: 32px;
+                height: 32px;
+            }
+            
+            .social-link svg {
+                width: 16px;
+                height: 16px;
             }
             
             .form-container {
@@ -1171,11 +1207,37 @@ async function subHtml(request) {
 <body>
     <div class="container">
         <div class="header">
-            <a href="https://github.com/cmliu/CF-Workers-BPSUB" target="_blank" class="social-link" title="GitHub">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
-                    <path fill="currentColor" fill-rule="evenodd" d="M7.976 0A7.977 7.977 0 0 0 0 7.976c0 3.522 2.3 6.507 5.431 7.584c.392.049.538-.196.538-.392v-1.37c-2.201.49-2.69-1.076-2.69-1.076c-.343-.93-.881-1.175-.881-1.175c-.734-.489.048-.489.048-.489c.783.049 1.224.832 1.224.832c.734 1.223 1.859.88 2.3.685c.048-.538.293-.88.489-1.076c-1.762-.196-3.621-.881-3.621-3.964c0-.88.293-1.566.832-2.153c-.05-.147-.343-.978.098-2.055c0 0 .685-.196 2.201.832c.636-.196 1.322-.245 2.007-.245s1.37.098 2.006.245c1.517-1.027 2.202-.832 2.202-.832c.44 1.077.146 1.908.097 2.104a3.16 3.16 0 0 1 .832 2.153c0 3.083-1.86 3.719-3.62 3.915c.293.244.538.733.538 1.467v2.202c0 .196.146.44.538.392A7.98 7.98 0 0 0 16 7.976C15.951 3.572 12.38 0 7.976 0" clip-rule="evenodd"></path>
-                </svg>
-            </a>
+            <div class="social-links-container">
+                <a href="https://github.com/cmliu/CF-Workers-BPSUB" target="_blank" class="social-link" title="BPSUB GitHub 源码仓库">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+                        <path fill="currentColor" fill-rule="evenodd" d="M7.976 0A7.977 7.977 0 0 0 0 7.976c0 3.522 2.3 6.507 5.431 7.584c.392.049.538-.196.538-.392v-1.37c-2.201.49-2.69-1.076-2.69-1.076c-.343-.93-.881-1.175-.881-1.175c-.734-.489.048-.489.048-.489c.783.049 1.224.832 1.224.832c.734 1.223 1.859.88 2.3.685c.048-.538.293-.88.489-1.076c-1.762-.196-3.621-.881-3.621-3.964c0-.88.293-1.566.832-2.153c-.05-.147-.343-.978.098-2.055c0 0 .685-.196 2.201.832c.636-.196 1.322-.245 2.007-.245s1.37.098 2.006.245c1.517-1.027 2.202-.832 2.202-.832c.44 1.077.146 1.908.097 2.104a3.16 3.16 0 0 1 .832 2.153c0 3.083-1.86 3.719-3.62 3.915c.293.244.538.733.538 1.467v2.202c0 .196.146.44.538.392A7.98 7.98 0 0 0 16 7.976C15.951 3.572 12.38 0 7.976 0" clip-rule="evenodd"></path>
+                    </svg>
+                </a>
+                <a href="https://t.me/CMLiussss" target="_blank" class="social-link" title="CMLiussss 技术交流群">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+                        <defs>
+                            <linearGradient id="telegramGradient1" x1="50%" x2="50%" y1="0%" y2="100%">
+                                <stop offset="0%" stop-color="#2AABEE"></stop>
+                                <stop offset="100%" stop-color="#229ED9"></stop>
+                            </linearGradient>
+                        </defs>
+                        <path fill="url(#telegramGradient1)" d="M128 0C94.06 0 61.48 13.494 37.5 37.49A128.04 128.04 0 0 0 0 128c0 33.934 13.5 66.514 37.5 90.51C61.48 242.506 94.06 256 128 256s66.52-13.494 90.5-37.49c24-23.996 37.5-56.576 37.5-90.51s-13.5-66.514-37.5-90.51C194.52 13.494 161.94 0 128 0"></path>
+                        <path fill="#FFF" d="M57.94 126.648q55.98-24.384 74.64-32.152c35.56-14.786 42.94-17.354 47.76-17.441c1.06-.017 3.42.245 4.96 1.49c1.28 1.05 1.64 2.47 1.82 3.467c.16.996.38 3.266.2 5.038c-1.92 20.24-10.26 69.356-14.5 92.026c-1.78 9.592-5.32 12.808-8.74 13.122c-7.44.684-13.08-4.912-20.28-9.63c-11.26-7.386-17.62-11.982-28.56-19.188c-12.64-8.328-4.44-12.906 2.76-20.386c1.88-1.958 34.64-31.748 35.26-34.45c.08-.338.16-1.598-.6-2.262c-.74-.666-1.84-.438-2.64-.258c-1.14.256-19.12 12.152-54 35.686c-5.1 3.508-9.72 5.218-13.88 5.128c-4.56-.098-13.36-2.584-19.9-4.708c-8-2.606-14.38-3.984-13.82-8.41c.28-2.304 3.46-4.662 9.52-7.072"></path>
+                    </svg>
+                </a>
+                <a href="https://t.me/bestip_one" target="_blank" class="social-link" title="白嫖哥交流群">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+                        <defs>
+                            <linearGradient id="telegramGradient2" x1="50%" x2="50%" y1="0%" y2="100%">
+                                <stop offset="0%" stop-color="#2AABEE"></stop>
+                                <stop offset="100%" stop-color="#229ED9"></stop>
+                            </linearGradient>
+                        </defs>
+                        <path fill="url(#telegramGradient2)" d="M128 0C94.06 0 61.48 13.494 37.5 37.49A128.04 128.04 0 0 0 0 128c0 33.934 13.5 66.514 37.5 90.51C61.48 242.506 94.06 256 128 256s66.52-13.494 90.5-37.49c24-23.996 37.5-56.576 37.5-90.51s-13.5-66.514-37.5-90.51C194.52 13.494 161.94 0 128 0"></path>
+                        <path fill="#FFF" d="M57.94 126.648q55.98-24.384 74.64-32.152c35.56-14.786 42.94-17.354 47.76-17.441c1.06-.017 3.42.245 4.96 1.49c1.28 1.05 1.64 2.47 1.82 3.467c.16.996.38 3.266.2 5.038c-1.92 20.24-10.26 69.356-14.5 92.026c-1.78 9.592-5.32 12.808-8.74 13.122c-7.44.684-13.08-4.912-20.28-9.63c-11.26-7.386-17.62-11.982-28.56-19.188c-12.64-8.328-4.44-12.906 2.76-20.386c1.88-1.958 34.64-31.748 35.26-34.45c.08-.338.16-1.598-.6-2.262c-.74-.666-1.84-.438-2.64-.258c-1.14.256-19.12 12.152-54 35.686c-5.1 3.508-9.72 5.218-13.88 5.128c-4.56-.098-13.36-2.584-19.9-4.708c-8-2.606-14.38-3.984-13.82-8.41c.28-2.304 3.46-4.662 9.52-7.072"></path>
+                    </svg>
+                </a>
+            </div>
             <h1>🚀 BPSUB</h1>
             <p>Cloudflare Snipaste 订阅生成器</p>
         </div>
@@ -1321,8 +1383,7 @@ async function subHtml(request) {
         </div>
         
         <div class="footer">
-            <p>© 2025 BPSUB - Powered by Cloudflare Snipaste</p>
-            <p>感谢白嫖哥提供维护的Snipaste节点 - <a href="https://t.me/bestip_one" target="_blank" class="thanks-link" title="访问白嫖哥的Telegram频道">🔗 白嫖哥频道</a></p>
+            <p>© 2025 BPSUB - Powered by Cloudflare Snipaste | 感谢白嫖哥提供维护的 - <a href="https://t.me/v2rayByCf" target="_blank" class="thanks-link" title="访问Snipaste节点分享频道">🔗 Snipaste节点</a></p>
         </div>
     </div>
     

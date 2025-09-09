@@ -28,6 +28,11 @@ export default {
         const UA = request.headers.get('User-Agent') || 'null';
         const userAgent = UA.toLowerCase();
         const 需要订阅转换的UA = ['clash', 'meta', 'mihomo', 'sing-box', 'singbox'];
+        // 检查是否来自订阅转换后端的请求
+        const isSubConverterRequest = request.headers.get('subconverter-request') ||
+            request.headers.get('subconverter-version') ||
+            userAgent.includes('subconverter');
+
         if (url.pathname === '/sub') {
             const responseHeaders = {
                 "content-type": "text/plain; charset=utf-8",
@@ -35,9 +40,9 @@ export default {
                 "Profile-web-page-url": url.origin,
             };
 
-            if (需要订阅转换的UA.some(ua => userAgent.includes(ua)) && 
-                !userAgent.includes(('CF-Workers-SUB').toLowerCase()) && 
-                !userAgent.includes('subconverter')) {
+            if (需要订阅转换的UA.some(ua => userAgent.includes(ua)) &&
+                !userAgent.includes(('CF-Workers-SUB').toLowerCase()) &&
+                !isSubConverterRequest) {
                 subConverter = url.searchParams.get('subapi') || subConverter;
                 if (subConverter.includes("http://")) {
                     subConverter = subConverter.split("//")[1];
@@ -73,7 +78,7 @@ export default {
                                 timestamp: new Date().toISOString()
                             }
                         };
-                        
+
                         // 尝试获取错误响应内容
                         try {
                             const errorText = await subConverterResponse.text();
@@ -83,7 +88,7 @@ export default {
                         } catch (textError) {
                             errorDetails.details.responseBodyError = textError.message;
                         }
-                        
+
                         return new Response(JSON.stringify(errorDetails, null, 2), {
                             status: subConverterResponse.status,
                             headers: { 'content-type': 'application/json; charset=utf-8' },
@@ -106,7 +111,7 @@ export default {
                             stack: error.stack ? error.stack.substring(0, 500) : undefined
                         }
                     };
-                    
+
                     return new Response(JSON.stringify(errorDetails, null, 2), {
                         status: 500,
                         headers: { 'content-type': 'application/json; charset=utf-8' },
@@ -156,8 +161,8 @@ export default {
                         addressid = parts[1];
                     }
 
-                    //if (addressid.includes(':')) addressid = addressid.split(':')[0];
-                    
+                    if (addressid.includes(':')) addressid = addressid.split(':')[0];
+
                 } else {
                     address = match[1];
                     port = match[2] || port;
@@ -178,8 +183,27 @@ export default {
                     return 为烈士Link;
                 }
             }).join('\n');
+            function encodeBase64(data) {
+                const binary = new TextEncoder().encode(data);
+                let base64 = '';
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
-            const 返回订阅内容 = userAgent.includes(('Mozilla').toLowerCase()) ? responseBody : btoa(responseBody);
+                for (let i = 0; i < binary.length; i += 3) {
+                    const byte1 = binary[i];
+                    const byte2 = binary[i + 1] || 0;
+                    const byte3 = binary[i + 2] || 0;
+
+                    base64 += chars[byte1 >> 2];
+                    base64 += chars[((byte1 & 3) << 4) | (byte2 >> 4)];
+                    base64 += chars[((byte2 & 15) << 2) | (byte3 >> 6)];
+                    base64 += chars[byte3 & 63];
+                }
+
+                const padding = 3 - (binary.length % 3 || 3);
+                return base64.slice(0, base64.length - padding) + '=='.slice(0, padding);
+            }
+            const 返回订阅内容 = userAgent.includes(('Mozilla').toLowerCase()) ? responseBody : encodeBase64(responseBody);
+
             if (!userAgent.includes(('Mozilla').toLowerCase())) responseHeaders["Content-Disposition"] = `attachment; filename*=utf-8''${encodeURIComponent(FileName)}`;
             return new Response(返回订阅内容, { headers: responseHeaders });
         } else if (url.pathname === '/uuid.json') {

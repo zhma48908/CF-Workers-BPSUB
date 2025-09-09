@@ -876,6 +876,181 @@ async function subHtml(request) {
             color: #ffffff !important;
             text-decoration: underline !important;
         }
+        
+        /* 代理模式选择器样式 */
+        .proxy-mode-selector {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .radio-option {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 12px 18px;
+            border: 2px solid rgba(0, 255, 255, 0.2);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            background: rgba(26, 32, 44, 0.5);
+            position: relative;
+            flex: 1;
+            min-width: 180px;
+        }
+        
+        .radio-option:hover {
+            border-color: rgba(0, 255, 255, 0.4);
+            background: rgba(0, 255, 255, 0.1);
+        }
+        
+        .radio-option input[type="radio"] {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary-color);
+        }
+        
+        .radio-option input[type="radio"]:checked + .radio-label {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .radio-option.checked {
+            border-color: var(--primary-color);
+            background: rgba(0, 255, 255, 0.15);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+        }
+        
+        .radio-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+        
+        @media (max-width: 600px) {
+            .proxy-mode-selector {
+                flex-direction: column;
+            }
+            
+            .radio-option {
+                min-width: auto;
+            }
+        }
+        
+        /* 复选框样式 */
+        .checkbox-option {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 8px 12px;
+            border: 2px solid rgba(0, 255, 255, 0.2);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            background: rgba(26, 32, 44, 0.3);
+        }
+        
+        .checkbox-option:hover {
+            border-color: rgba(0, 255, 255, 0.4);
+            background: rgba(0, 255, 255, 0.1);
+        }
+        
+        .checkbox-option input[type="checkbox"] {
+            margin-right: 10px;
+            width: 16px;
+            height: 16px;
+            accent-color: var(--primary-color);
+        }
+        
+        .checkbox-option input[type="checkbox"]:checked + .checkbox-label {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .checkbox-option.checked {
+            border-color: var(--primary-color);
+            background: rgba(0, 255, 255, 0.15);
+        }
+        
+        .checkbox-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        /* Socks5 标题行样式 */
+        .socks5-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .socks5-header label[for="socks5"] {
+            margin-bottom: 0;
+            flex-shrink: 0;
+        }
+        
+        /* 行内复选框样式 */
+        .checkbox-option-inline {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 0;
+            border: none;
+            border-radius: 0;
+            transition: all 0.3s ease;
+            background: transparent;
+            font-size: 0.9em;
+        }
+        
+        .checkbox-option-inline:hover {
+            border-color: transparent;
+            background: transparent;
+        }
+        
+        .checkbox-option-inline input[type="checkbox"] {
+            margin-right: 8px;
+            width: 14px;
+            height: 14px;
+            accent-color: var(--primary-color);
+        }
+        
+        .checkbox-option-inline input[type="checkbox"]:checked + .checkbox-label-inline {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .checkbox-option-inline.checked {
+            border-color: transparent;
+            background: transparent;
+        }
+        
+        .checkbox-label-inline {
+            color: var(--text-secondary);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        
+        /* 响应式处理 */
+        @media (max-width: 500px) {
+            .socks5-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .socks5-header label[for="socks5"] {
+                align-self: flex-start;
+            }
+            
+            .checkbox-option-inline {
+                align-self: flex-end;
+            }
+        }
     </style>
 </head>
 <body>
@@ -911,51 +1086,80 @@ async function subHtml(request) {
             <div class="section collapsible collapsed">
                 <div class="section-title" onclick="toggleSection(this)">🔧 落地IP设置</div>
                 <div class="section-content">
+                    <!-- 选项切换 -->
                     <div class="form-group">
+                        <label style="margin-bottom: 15px;">选择连接方式：</label>
+                        <div class="proxy-mode-selector">
+                            <label class="radio-option">
+                                <input type="radio" name="proxyMode" value="proxyip" checked onchange="toggleProxyMode()">
+                                <span class="radio-label">🌐 ProxyIP 模式</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="proxyMode" value="socks5" onchange="toggleProxyMode()">
+                                <span class="radio-label">🔒 Socks5 代理</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- ProxyIP 输入框 -->
+                    <div class="form-group" id="proxyip-group">
                         <label for="proxyip">ProxyIP地址：</label>
                         <input type="text" id="proxyip" placeholder="proxyip.fxxk.dedyn.io:443" value="">
+                    </div>
+                    
+                    <!-- Socks5 输入框 -->
+                    <div class="form-group" id="socks5-group" style="display: none;">
+                        <!-- 标题行：Socks5代理 + 全局代理选项 -->
+                        <div class="socks5-header">
+                            <label for="socks5">Socks5代理：</label>
+                            <label class="checkbox-option-inline">
+                                <input type="checkbox" id="globalSocks5">
+                                <span class="checkbox-label-inline">🌍 全局代理</span>
+                            </label>
+                        </div>
+                        <input type="text" id="socks5" placeholder="user:password@127.0.0.1:1080 或 127.0.0.1:1080" value="">
+                    </div>
+                    
+                    <!-- ProxyIP 详细说明 -->
+                    <div style="margin-top: 24px;">
+                        <h3 style="color: var(--text-primary); margin: 24px 0 16px;">📖 ProxyIP 概念</h3>
+                        <p style="margin-bottom: 16px; line-height: 1.8; color: var(--text-secondary);">
+                            在 Cloudflare 开发环境中，ProxyIP 特指那些能够成功代理连接到 Cloudflare 服务的第三方 IP 地址。
+                        </p>
                         
-                        <!-- ProxyIP 详细说明 -->
-                        <div style="margin-top: 24px;">
-                            <h3 style="color: var(--text-primary); margin: 24px 0 16px;">📖 ProxyIP 概念</h3>
-                            <p style="margin-bottom: 16px; line-height: 1.8; color: var(--text-secondary);">
-                                在 Cloudflare 开发环境中，ProxyIP 特指那些能够成功代理连接到 Cloudflare 服务的第三方 IP 地址。
-                            </p>
-                            
-                            <h3 style="color: var(--text-primary); margin: 24px 0 16px;">🔧 技术原理</h3>
-                            <p style="margin-bottom: 16px; line-height: 1.8; color: var(--text-secondary);">
-                                根据 Cloudflare 开发文档的 <a href="https://developers.cloudflare.com/workers/runtime-apis/tcp-sockets/" target="_blank" style="color: var(--primary-color); text-decoration: none;">TCP Sockets 官方文档</a> 说明，存在以下技术限制：
-                            </p>
-                            
-                            <div class="code-block" style="background: #fff3cd; color: #856404; border-left: 4px solid var(--warning-color);">
-                                ⚠️ Outbound TCP sockets to <a href="https://www.cloudflare.com/ips/" target="_blank" >Cloudflare IP ranges ↗</a>  are temporarily blocked, but will be re-enabled shortly.
-                            </div>
-                            
-                            <p style="margin: 16px 0; line-height: 1.8; color: var(--text-secondary);">
-                                这意味着 Cloudflare 开发无法直接连接到 Cloudflare 自有的 IP 地址段。为了解决这个限制，需要借助第三方云服务商的服务器作为"跳板"：
-                            </p>
-                            
-                            <div class="proxy-flow-container">
-                                <div class="proxy-flow">
-                                    <div class="proxy-step proxy-step-1">
-                                        <div class="proxy-step-title">Cloudflare Workers</div>
-                                        <div class="proxy-step-desc">发起请求</div>
-                                    </div>
-                                    <div class="proxy-arrow">→</div>
-                                    <div class="proxy-step proxy-step-2">
-                                        <div class="proxy-step-title">ProxyIP 服务器</div>
-                                        <div class="proxy-step-desc">第三方代理</div>
-                                    </div>
-                                    <div class="proxy-arrow">→</div>
-                                    <div class="proxy-step proxy-step-3">
-                                        <div class="proxy-step-title">Cloudflare 服务</div>
-                                        <div class="proxy-step-desc">目标服务</div>
-                                    </div>
+                        <h3 style="color: var(--text-primary); margin: 24px 0 16px;">🔧 技术原理</h3>
+                        <p style="margin-bottom: 16px; line-height: 1.8; color: var(--text-secondary);">
+                            根据 Cloudflare 开发文档的 <a href="https://developers.cloudflare.com/workers/runtime-apis/tcp-sockets/" target="_blank" style="color: var(--primary-color); text-decoration: none;">TCP Sockets 官方文档</a> 说明，存在以下技术限制：
+                        </p>
+                        
+                        <div class="code-block" style="background: #fff3cd; color: #856404; border-left: 4px solid var(--warning-color);">
+                            ⚠️ Outbound TCP sockets to <a href="https://www.cloudflare.com/ips/" target="_blank" >Cloudflare IP ranges ↗</a>  are temporarily blocked, but will be re-enabled shortly.
+                        </div>
+                        
+                        <p style="margin: 16px 0; line-height: 1.8; color: var(--text-secondary);">
+                            这意味着 Cloudflare 开发无法直接连接到 Cloudflare 自有的 IP 地址段。为了解决这个限制，需要借助第三方云服务商的服务器作为"跳板"：
+                        </p>
+                        
+                        <div class="proxy-flow-container">
+                            <div class="proxy-flow">
+                                <div class="proxy-step proxy-step-1">
+                                    <div class="proxy-step-title">Cloudflare Workers</div>
+                                    <div class="proxy-step-desc">发起请求</div>
                                 </div>
-                                <p class="proxy-explanation">
-                                    通过第三方服务器反向代理 Cloudflare 的 443 端口，实现对 Cloudflare 服务的访问
-                                </p>
+                                <div class="proxy-arrow">→</div>
+                                <div class="proxy-step proxy-step-2">
+                                    <div class="proxy-step-title">ProxyIP 服务器</div>
+                                    <div class="proxy-step-desc">第三方代理</div>
+                                </div>
+                                <div class="proxy-arrow">→</div>
+                                <div class="proxy-step proxy-step-3">
+                                    <div class="proxy-step-title">Cloudflare 服务</div>
+                                    <div class="proxy-step-desc">目标服务</div>
+                                </div>
                             </div>
+                            <p class="proxy-explanation">
+                                通过第三方服务器反向代理 Cloudflare 的 443 端口，实现对 Cloudflare 服务的访问
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -1011,8 +1215,12 @@ async function subHtml(request) {
         function generateSubscription() {
             const ips = document.getElementById('ips').value.trim();
             const proxyip = document.getElementById('proxyip').value.trim();
+            const socks5 = document.getElementById('socks5').value.trim();
             const subapi = document.getElementById('subapi').value.trim();
             const subconfig = document.getElementById('subconfig').value.trim();
+            
+            // 获取选择的代理模式
+            const proxyMode = document.querySelector('input[name="proxyMode"]:checked').value;
             
             // 获取当前域名
             const currentDomain = window.location.host;
@@ -1029,11 +1237,35 @@ async function subHtml(request) {
                 }
             }
             
-            // 处理PROXYIP
-            if (proxyip) {
-                // 智能处理 proxyip 格式
-                let processedProxyip = processProxyIP(proxyip);
-                params.append('proxyip', processedProxyip);
+            // 根据选择的模式处理代理设置
+            if (proxyMode === 'socks5') {
+                // 处理Socks5模式
+                if (!socks5) {
+                    alert('⚠️ 选择Socks5模式时，Socks5代理地址不能为空！\\n\\n请输入Socks5地址或切换到ProxyIP模式。');
+                    return;
+                }
+                
+                // 智能处理并验证Socks5格式
+                const processedSocks5 = processSocks5(socks5);
+                if (!processedSocks5) {
+                    alert('⚠️ Socks5格式不正确！\\n\\n请检查输入格式，例如：\\n• user:password@127.0.0.1:1080\\n• 127.0.0.1:1080');
+                    return;
+                }
+                
+                params.append('socks5', processedSocks5);
+                
+                // 检查是否启用全局Socks5
+                const globalSocks5 = document.getElementById('globalSocks5').checked;
+                if (globalSocks5) {
+                    params.append('global', 'true');
+                }
+            } else {
+                // 处理ProxyIP模式
+                if (proxyip) {
+                    // 智能处理 proxyip 格式
+                    let processedProxyip = processProxyIP(proxyip);
+                    params.append('proxyip', processedProxyip);
+                }
             }
             
             // 处理订阅转换后端
@@ -1154,6 +1386,32 @@ async function subHtml(request) {
             section.classList.toggle('collapsed');
         }
         
+        // 代理模式切换函数
+        function toggleProxyMode() {
+            const proxyMode = document.querySelector('input[name="proxyMode"]:checked').value;
+            const proxyipGroup = document.getElementById('proxyip-group');
+            const socks5Group = document.getElementById('socks5-group');
+            
+            // 更新单选框样式
+            document.querySelectorAll('input[name="proxyMode"]').forEach(radio => {
+                const radioOption = radio.closest('.radio-option');
+                if (radio.checked) {
+                    radioOption.classList.add('checked');
+                } else {
+                    radioOption.classList.remove('checked');
+                }
+            });
+            
+            // 切换显示内容
+            if (proxyMode === 'socks5') {
+                proxyipGroup.style.display = 'none';
+                socks5Group.style.display = 'block';
+            } else {
+                proxyipGroup.style.display = 'block';
+                socks5Group.style.display = 'none';
+            }
+        }
+        
         // 智能处理 proxyip 格式的函数
         function processProxyIP(input) {
             // 如果输入为空，返回原值
@@ -1175,9 +1433,74 @@ async function subHtml(request) {
             return input;
         }
         
+        // 智能处理 Socks5 格式的函数
+        function processSocks5(input) {
+            if (!input) return null;
+            
+            let cleaned = input.trim();
+            
+            // 移除各种协议前缀
+            cleaned = cleaned.replace(/^(socks5?:\\/\\/|socks:\\/\\/)/i, '');
+            
+            // 移除末尾的路径、fragment等
+            cleaned = cleaned.replace(/[\\/\\#].*$/, '');
+            
+            // 验证基本格式
+            // 支持格式: user:password@host:port 或 host:port
+            const socks5Regex = /^(?:([^:@]+):([^:@]+)@)?([^:@]+):(\d+)$/;
+            const match = cleaned.match(socks5Regex);
+            
+            if (!match) {
+                return null;
+            }
+            
+            const [, user, password, host, port] = match;
+            
+            // 验证端口范围
+            const portNum = parseInt(port);
+            if (portNum < 1 || portNum > 65535) {
+                return null;
+            }
+            
+            // 构建最终格式
+            if (user && password) {
+                return \`\${user}:\${password}@\${host}:\${port}\`;
+            } else {
+                return \`\${host}:\${port}\`;
+            }
+        }
+        
         // 页面加载完成后的初始化
         document.addEventListener('DOMContentLoaded', function() {
-            // 可以在这里添加一些初始化逻辑
+            // 初始化单选框状态
+            document.querySelectorAll('input[name="proxyMode"]').forEach(radio => {
+                const radioOption = radio.closest('.radio-option');
+                if (radio.checked) {
+                    radioOption.classList.add('checked');
+                }
+                
+                // 添加事件监听
+                radio.addEventListener('change', function() {
+                    toggleProxyMode();
+                });
+            });
+            
+            // 初始化复选框事件监听
+            const globalSocks5Checkbox = document.getElementById('globalSocks5');
+            if (globalSocks5Checkbox) {
+                globalSocks5Checkbox.addEventListener('change', function() {
+                    // 支持两种复选框样式
+                    const checkboxOption = this.closest('.checkbox-option') || this.closest('.checkbox-option-inline');
+                    if (checkboxOption) {
+                        if (this.checked) {
+                            checkboxOption.classList.add('checked');
+                        } else {
+                            checkboxOption.classList.remove('checked');
+                        }
+                    }
+                });
+            }
+            
             console.log('BPSUB 订阅生成器已加载 - 科技范版本');
         });
     </script>

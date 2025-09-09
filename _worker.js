@@ -1485,22 +1485,38 @@ async function subHtml(request) {
             
             let cleaned = input.trim();
             
-            // 移除各种协议前缀
+            // 移除各种协议前缀 - 修复转义问题
             cleaned = cleaned.replace(/^(socks5?:\\/\\/|socks:\\/\\/)/i, '');
             
-            // 移除末尾的路径、fragment等
-            cleaned = cleaned.replace(/[\\/\\#].*$/, '');
+            // 移除末尾的路径、fragment等 - 修复转义问题  
+            cleaned = cleaned.replace(/[\\/#].*$/, '');
             
             // 验证基本格式
             // 支持格式: user:password@host:port 或 host:port
-            const socks5Regex = /^(?:([^:@]+):([^:@]+)@)?([^:@]+):(\d+)$/;
-            const match = cleaned.match(socks5Regex);
+            // 修正正则表达式逻辑
+            let match;
+            let user, password, host, port;
+            
+            // 检查是否包含用户名和密码（包含@符号）
+            if (cleaned.includes('@')) {
+                // 格式: user:password@host:port
+                const authRegex = /^([^:@]+):([^:@]+)@([^:@\\s]+):(\\d+)$/;
+                match = cleaned.match(authRegex);
+                if (match) {
+                    [, user, password, host, port] = match;
+                }
+            } else {
+                // 格式: host:port
+                const simpleRegex = /^([^:@\\s]+):(\\d+)$/;
+                match = cleaned.match(simpleRegex);
+                if (match) {
+                    [, host, port] = match;
+                }
+            }
             
             if (!match) {
                 return null;
             }
-            
-            const [, user, password, host, port] = match;
             
             // 验证端口范围
             const portNum = parseInt(port);

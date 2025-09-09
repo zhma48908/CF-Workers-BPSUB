@@ -62,16 +62,54 @@ export default {
                     const subConverterResponse = await fetch(subConverterUrl, { headers: { 'User-Agent': UA } });
 
                     if (!subConverterResponse.ok) {
-                        throw new Error(`Error fetching subConverterUrl: ${subConverterResponse.status} ${subConverterResponse.statusText}`);
+                        const errorDetails = {
+                            error: "SubConverter请求失败",
+                            message: `订阅转换服务返回错误状态`,
+                            details: {
+                                status: subConverterResponse.status,
+                                statusText: subConverterResponse.statusText,
+                                url: subConverterUrl,
+                                headers: Object.fromEntries(subConverterResponse.headers.entries()),
+                                timestamp: new Date().toISOString()
+                            }
+                        };
+                        
+                        // 尝试获取错误响应内容
+                        try {
+                            const errorText = await subConverterResponse.text();
+                            if (errorText) {
+                                errorDetails.details.responseBody = errorText.substring(0, 1000); // 限制长度
+                            }
+                        } catch (textError) {
+                            errorDetails.details.responseBodyError = textError.message;
+                        }
+                        
+                        return new Response(JSON.stringify(errorDetails, null, 2), {
+                            status: subConverterResponse.status,
+                            headers: { 'content-type': 'application/json; charset=utf-8' },
+                        });
                     }
 
                     let subConverterContent = await subConverterResponse.text();
 
                     return new Response(subConverterContent, { status: 200, headers: responseHeaders });
                 } catch (error) {
-                    return new Response(`Error: ${error.message}`, {
+                    const errorDetails = {
+                        error: "SubConverter连接异常",
+                        message: `无法连接到订阅转换服务或处理响应时发生错误`,
+                        details: {
+                            errorType: error.name || 'UnknownError',
+                            errorMessage: error.message,
+                            url: subConverterUrl,
+                            userAgent: UA,
+                            timestamp: new Date().toISOString(),
+                            stack: error.stack ? error.stack.substring(0, 500) : undefined
+                        }
+                    };
+                    
+                    return new Response(JSON.stringify(errorDetails, null, 2), {
                         status: 500,
-                        headers: { 'content-type': 'text/plain; charset=utf-8' },
+                        headers: { 'content-type': 'application/json; charset=utf-8' },
                     });
                 }
             }

@@ -185,7 +185,7 @@ export default {
 
                         let subConverterContent = await subConverterResponse.text();
 
-                        responseHeaders["Content-Disposition"] = `attachment; filename*=utf-8''${encodeURIComponent(FileName + '-' + 优选订阅生成器)}`;
+                        responseHeaders["Content-Disposition"] = `attachment; filename*=utf-8''${encodeURIComponent(FileName)}`;
                         return new Response(subConverterContent, { status: 200, headers: responseHeaders });
                     } catch (error) {
                         const errorDetails = {
@@ -1312,7 +1312,7 @@ async function subHtml(request) {
         <div class="form-container">
             <!-- 优选IP部分 -->
             <div class="section">
-                <div class="section-title">🎯 优选IP设置</div>
+                <div class="section-title">⚡️ 优选IP设置</div>
                 
                 <!-- 优选IP模式选择 -->
                 <div class="form-group">

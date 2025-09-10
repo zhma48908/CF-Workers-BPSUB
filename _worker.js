@@ -439,8 +439,6 @@ function getDateString() {
 }
 
 async function subHtml(request) {
-    const url = new URL(request.url);
-
     const HTML = `
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -1316,10 +1314,24 @@ async function subHtml(request) {
             <!-- 优选IP部分 -->
             <div class="section">
                 <div class="section-title">🎯 优选IP设置</div>
-                <div style="background: rgba(0, 255, 255, 0.1); border: 1px solid rgba(0, 255, 255, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 20px; font-size: 0.9em; color: #e2e8f0;">
-                    💡 <strong>智能缓存提示：</strong> 您的输入将自动保存到浏览器本地缓存中，下次访问时会自动恢复，让您的配置更加便捷持久。
-                </div>
+                
+                <!-- 优选IP模式选择 -->
                 <div class="form-group">
+                    <label style="margin-bottom: 15px;">选择优选IP模式：</label>
+                    <div class="proxy-mode-selector">
+                        <label class="radio-option">
+                            <input type="radio" name="ipMode" value="custom" checked onchange="toggleIPMode()">
+                            <span class="radio-label">🎯 自定义优选IP</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="ipMode" value="subscription" onchange="toggleIPMode()">
+                            <span class="radio-label">🔗 优选订阅生成器</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- 自定义优选IP输入框 -->
+                <div class="form-group" id="custom-ip-group">
                     <label for="ips">优选IP列表（每行一个地址）：</label>
                     <textarea id="ips" placeholder="ADD示例：&#10;www.visa.cn#优选域名&#10;127.0.0.1:1234#CFnat&#10;[2606:4700::]:2053#IPv6&#10;&#10;注意：&#10;每行一个地址，格式为 地址:端口#备注&#10;IPv6地址需要用中括号括起来，如：[2606:4700::]:2053&#10;端口不写，默认为 443 端口，如：visa.cn#优选域名&#10;&#10;ADDAPI示例：&#10;https://raw.githubusercontent.com/cmliu/WorkerVless2sub/refs/heads/main/addressesapi.txt&#10;&#10;注意：ADDAPI直接添加直链即可"></textarea>
                     <div class="example">📝 格式说明：
@@ -1327,6 +1339,14 @@ async function subHtml(request) {
 • IPv6: [2606:4700::]:2053#IPv6地址
 • ADDAPI: https://example.com/api.txt
 • 每行一个地址，端口默认为443
+                    </div>
+                </div>
+                
+                <!-- 优选订阅生成器输入框 -->
+                <div class="form-group" id="subscription-generator-group" style="display: none;">
+                    <label for="subGenerator">优选订阅生成器地址：</label>
+                    <input type="text" id="subGenerator" placeholder="sub.google.com" value="">
+                    <div class="example">🔗 输入优选订阅生成器的域名地址，例如：sub.google.com
                     </div>
                 </div>
             </div>
@@ -1465,11 +1485,13 @@ async function subHtml(request) {
         function saveFormData() {
             const formData = {
                 ips: document.getElementById('ips').value,
+                subGenerator: document.getElementById('subGenerator').value,
                 proxyip: document.getElementById('proxyip').value,
                 socks5: document.getElementById('socks5').value,
                 subapi: document.getElementById('subapi').value,
                 subconfig: document.getElementById('subconfig').value,
                 proxyMode: document.querySelector('input[name="proxyMode"]:checked')?.value || 'proxyip',
+                ipMode: document.querySelector('input[name="ipMode"]:checked')?.value || 'custom',
                 globalSocks5: document.getElementById('globalSocks5').checked,
                 timestamp: Date.now()
             };
@@ -1496,10 +1518,20 @@ async function subHtml(request) {
                 
                 // 填充表单字段
                 if (formData.ips) document.getElementById('ips').value = formData.ips;
+                if (formData.subGenerator) document.getElementById('subGenerator').value = formData.subGenerator;
                 if (formData.proxyip) document.getElementById('proxyip').value = formData.proxyip;
                 if (formData.socks5) document.getElementById('socks5').value = formData.socks5;
                 if (formData.subapi) document.getElementById('subapi').value = formData.subapi;
                 if (formData.subconfig) document.getElementById('subconfig').value = formData.subconfig;
+                
+                // 设置IP模式
+                if (formData.ipMode) {
+                    const ipModeRadio = document.querySelector('input[name="ipMode"][value="' + formData.ipMode + '"]');
+                    if (ipModeRadio) {
+                        ipModeRadio.checked = true;
+                        toggleIPMode();
+                    }
+                }
                 
                 // 设置代理模式
                 if (formData.proxyMode) {
@@ -1527,7 +1559,7 @@ async function subHtml(request) {
         
         // 设置表单字段的自动保存事件监听器
         function setupAutoSave() {
-            const fields = ['ips', 'proxyip', 'socks5', 'subapi', 'subconfig'];
+            const fields = ['ips', 'subGenerator', 'proxyip', 'socks5', 'subapi', 'subconfig'];
             
             // 为文本输入字段添加事件监听
             fields.forEach(fieldId => {
@@ -1545,7 +1577,12 @@ async function subHtml(request) {
                 }
             });
             
-            // 为单选框添加事件监听
+            // 为IP模式单选框添加事件监听
+            document.querySelectorAll('input[name="ipMode"]').forEach(radio => {
+                radio.addEventListener('change', saveFormData);
+            });
+            
+            // 为代理模式单选框添加事件监听
             document.querySelectorAll('input[name="proxyMode"]').forEach(radio => {
                 radio.addEventListener('change', saveFormData);
             });
@@ -1559,12 +1596,14 @@ async function subHtml(request) {
         
         function generateSubscription() {
             const ips = document.getElementById('ips').value.trim();
+            const subGenerator = document.getElementById('subGenerator').value.trim();
             const proxyip = document.getElementById('proxyip').value.trim();
             const socks5 = document.getElementById('socks5').value.trim();
             const subapi = document.getElementById('subapi').value.trim();
             const subconfig = document.getElementById('subconfig').value.trim();
             
-            // 获取选择的代理模式
+            // 获取选择的IP模式和代理模式
+            const ipMode = document.querySelector('input[name="ipMode"]:checked').value;
             const proxyMode = document.querySelector('input[name="proxyMode"]:checked').value;
             
             // 保存当前表单数据
@@ -1576,12 +1615,22 @@ async function subHtml(request) {
             
             const params = new URLSearchParams();
             
-            // 处理优选IP
-            if (ips) {
-                // 将每行转换为用|分隔的格式
-                const ipsArray = ips.split('\\n').filter(line => line.trim()).map(line => line.trim());
-                if (ipsArray.length > 0) {
-                    params.append('ips', ipsArray.join('|'));
+            // 根据IP模式处理参数
+            if (ipMode === 'subscription') {
+                // 优选订阅生成器模式
+                if (!subGenerator) {
+                    alert('⚠️ 选择优选订阅生成器模式时，订阅生成器地址不能为空！\\n\\n请输入订阅生成器地址或切换到自定义优选IP模式。');
+                    return;
+                }
+                params.append('sub', subGenerator);
+            } else {
+                // 自定义优选IP模式
+                if (ips) {
+                    // 将每行转换为用|分隔的格式
+                    const ipsArray = ips.split('\\n').filter(line => line.trim()).map(line => line.trim());
+                    if (ipsArray.length > 0) {
+                        params.append('ips', ipsArray.join('|'));
+                    }
                 }
             }
             
@@ -1760,6 +1809,32 @@ async function subHtml(request) {
             }
         }
         
+        // IP模式切换函数
+        function toggleIPMode() {
+            const ipMode = document.querySelector('input[name="ipMode"]:checked').value;
+            const customIpGroup = document.getElementById('custom-ip-group');
+            const subscriptionGeneratorGroup = document.getElementById('subscription-generator-group');
+            
+            // 更新单选框样式
+            document.querySelectorAll('input[name="ipMode"]').forEach(radio => {
+                const radioOption = radio.closest('.radio-option');
+                if (radio.checked) {
+                    radioOption.classList.add('checked');
+                } else {
+                    radioOption.classList.remove('checked');
+                }
+            });
+            
+            // 切换显示内容
+            if (ipMode === 'subscription') {
+                customIpGroup.style.display = 'none';
+                subscriptionGeneratorGroup.style.display = 'block';
+            } else {
+                customIpGroup.style.display = 'block';
+                subscriptionGeneratorGroup.style.display = 'none';
+            }
+        }
+        
         // 智能处理 proxyip 格式的函数
         function processProxyIP(input) {
             // 如果输入为空，返回原值
@@ -1844,7 +1919,20 @@ async function subHtml(request) {
             // 设置自动保存功能
             setupAutoSave();
             
-            // 初始化单选框状态
+            // 初始化IP模式单选框状态
+            document.querySelectorAll('input[name="ipMode"]').forEach(radio => {
+                const radioOption = radio.closest('.radio-option');
+                if (radio.checked) {
+                    radioOption.classList.add('checked');
+                }
+                
+                // 添加事件监听
+                radio.addEventListener('change', function() {
+                    toggleIPMode();
+                });
+            });
+            
+            // 初始化代理模式单选框状态
             document.querySelectorAll('input[name="proxyMode"]').forEach(radio => {
                 const radioOption = radio.closest('.radio-option');
                 if (radio.checked) {
@@ -1856,6 +1944,10 @@ async function subHtml(request) {
                     toggleProxyMode();
                 });
             });
+            
+            // 执行初始切换以确保显示状态正确
+            toggleIPMode();
+            toggleProxyMode();
             
             // 初始化复选框事件监听
             const globalSocks5Checkbox = document.getElementById('globalSocks5');

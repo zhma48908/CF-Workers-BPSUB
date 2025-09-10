@@ -112,14 +112,10 @@ export default {
                         });
                     }
 
-                    // 提取content-disposition头中的文件名
-                    const contentDisposition = subConverterResponse.headers.get('content-disposition');
-                    const 优选订阅生成器名 = extractFilenameFromContentDisposition(contentDisposition);
-
                     const responseBody = await subConverterResponse.text();
                     const 返回订阅内容 = userAgent.includes(('Mozilla').toLowerCase()) ? atob(responseBody) : responseBody;
 
-                    if (!userAgent.includes(('Mozilla').toLowerCase())) responseHeaders["Content-Disposition"] = `attachment; filename*=utf-8''${encodeURIComponent(FileName)}${优选订阅生成器名}`;
+                    if (!userAgent.includes(('Mozilla').toLowerCase())) responseHeaders["Content-Disposition"] = `attachment; filename*=utf-8''${encodeURIComponent(FileName + '-' + 优选订阅生成器)}`;
                     return new Response(返回订阅内容, { headers: responseHeaders });
                 } catch (error) {
                     const errorDetails = {
@@ -187,13 +183,9 @@ export default {
                             });
                         }
 
-                        // 提取content-disposition头中的文件名
-                        const contentDisposition = subConverterResponse.headers.get('content-disposition');
-                        const 优选订阅生成器名 = extractFilenameFromContentDisposition(contentDisposition);
-
                         let subConverterContent = await subConverterResponse.text();
 
-                        responseHeaders["Content-Disposition"] = `attachment; filename*=utf-8''${encodeURIComponent(FileName)}${优选订阅生成器名}`;
+                        responseHeaders["Content-Disposition"] = `attachment; filename*=utf-8''${encodeURIComponent(FileName + '-' + 优选订阅生成器)}`;
                         return new Response(subConverterContent, { status: 200, headers: responseHeaders });
                     } catch (error) {
                         const errorDetails = {
@@ -2022,22 +2014,4 @@ function encodeBase64(data) {
 
     const padding = 3 - (binary.length % 3 || 3);
     return base64.slice(0, base64.length - padding) + '=='.slice(0, padding);
-}
-
-// 提取content-disposition头中文件名的通用函数
-function extractFilenameFromContentDisposition(contentDisposition) {
-    console.log('提取文件名，Content-Disposition头:', contentDisposition);
-    
-    if (!contentDisposition) return '';
-
-    // 检测 filename*=utf-8'' 是否存在，如果存在就获取之后的内容
-    if (contentDisposition.includes("filename*=utf-8''")) {
-        const index = contentDisposition.indexOf("filename*=utf-8''") + "filename*=utf-8''".length;
-        const remaining = contentDisposition.substring(index);
-        // 获取到分号或字符串末尾的内容
-        const endIndex = remaining.indexOf(';');
-        return endIndex !== -1 ? '-' + remaining.substring(0, endIndex) : '-' + remaining;
-    }
-
-    return '';
 }

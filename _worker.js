@@ -734,9 +734,6 @@ async function subHtml(request) {
         .generate-btn {
             width: 100%;
             padding: 18px;
-            background: linear-gradient(135deg, rgba(0, 255, 255, 0.2) 0%, rgba(138, 43, 226, 0.2) 100%);
-            color: #ffffff;
-            border: 2px solid rgba(0, 255, 255, 0.5);
             border-radius: 12px;
             font-size: 1.2em;
             font-weight: 700;
@@ -744,7 +741,14 @@ async function subHtml(request) {
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0, 255, 255, 0.3);
+            color: #ffffff;
+        }
+        
+        /* 主按钮 - 生成订阅 (青色主题) */
+        .generate-btn:not(.short-url-btn) {
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.25) 0%, rgba(138, 43, 226, 0.25) 100%);
+            border: 2px solid rgba(0, 255, 255, 0.6);
+            box-shadow: 0 4px 15px rgba(0, 255, 255, 0.4);
         }
         
         .generate-btn::before {
@@ -758,11 +762,12 @@ async function subHtml(request) {
             transition: left 0.5s;
         }
         
-        .generate-btn:hover {
+        /* 主按钮hover效果 */
+        .generate-btn:not(.short-url-btn):hover {
             transform: translateY(-2px);
-            background: linear-gradient(135deg, rgba(0, 255, 255, 0.3) 0%, rgba(138, 43, 226, 0.3) 100%);
-            border-color: rgba(0, 255, 255, 0.8);
-            box-shadow: 0 8px 25px rgba(0, 255, 255, 0.5);
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.35) 0%, rgba(138, 43, 226, 0.35) 100%);
+            border-color: rgba(0, 255, 255, 0.9);
+            box-shadow: 0 8px 25px rgba(0, 255, 255, 0.6);
         }
         
         .generate-btn:hover::before {
@@ -773,10 +778,71 @@ async function subHtml(request) {
             transform: translateY(0);
         }
         
+        .button-container {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+        }
+        
+        .button-container .generate-btn {
+            flex: 1;
+        }
+        
+        .short-url-btn:disabled {
+            background: linear-gradient(135deg, rgba(128, 128, 128, 0.3) 0%, rgba(64, 64, 64, 0.3) 100%);
+            color: #999999;
+            border-color: rgba(128, 128, 128, 0.3);
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none !important;
+        }
+        
+        .short-url-btn:disabled::before {
+            display: none;
+        }
+        
+        .short-url-btn:disabled:hover {
+            background: linear-gradient(135deg, rgba(128, 128, 128, 0.3) 0%, rgba(64, 64, 64, 0.3) 100%);
+            border-color: rgba(128, 128, 128, 0.3);
+            box-shadow: none;
+            transform: none;
+        }
+        
+        /* 副按钮 - 生成短链 (橙色主题) */
+        .short-url-btn:not(:disabled) {
+            background: linear-gradient(135deg, rgba(251, 146, 60, 0.2) 0%, rgba(245, 101, 101, 0.2) 100%);
+            border: 2px solid rgba(251, 146, 60, 0.5);
+            color: #ffffff;
+            box-shadow: 0 3px 12px rgba(251, 146, 60, 0.3);
+        }
+        
+        .short-url-btn:not(:disabled):hover {
+            background: linear-gradient(135deg, rgba(251, 146, 60, 0.3) 0%, rgba(245, 101, 101, 0.3) 100%);
+            border-color: rgba(251, 146, 60, 0.7);
+            box-shadow: 0 6px 20px rgba(251, 146, 60, 0.4);
+            transform: translateY(-1px);
+        }
+        
+        .short-url-btn:not(:disabled)::before {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        }
+        
         .result-section {
             margin-top: 35px;
             display: none;
             animation: fadeInUp 0.5s ease-out;
+        }
+        
+
+        
+        .copied {
+            animation: pulse 0.6s ease-in-out;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
         
         @keyframes fadeInUp {
@@ -1453,20 +1519,25 @@ async function subHtml(request) {
             </div>
             
             <!-- 生成按钮 -->
-            <button class="generate-btn" onclick="generateSubscription()">
-                <span>🎉 生成订阅链接</span>
-            </button>
+            <div class="button-container">
+                <button class="generate-btn" onclick="generateSubscription()">
+                    <span>🎉 生成订阅</span>
+                </button>
+                <button class="generate-btn short-url-btn" id="generateShortUrl" onclick="generateShortUrl()" disabled>
+                    <span>🔗 生成短链</span>
+                </button>
+            </div>
             
             <!-- 结果显示 -->
             <div class="result-section" id="result-section">
                 <div class="section-title">📋 订阅链接（点击复制）</div>
-                <div class="result-url" id="result-url" onclick="copyToClipboard()"></div>
+                <div class="result-url" id="subscriptionLink" onclick="copyToClipboard('subscriptionLink')"></div>
                 
                 <!-- 二维码显示 -->
                 <div class="qr-container" id="qr-container">
                     <div class="qr-title">📱 手机扫码订阅</div>
                     <div class="qr-code" id="qrcode"></div>
-                    <div class="qr-description">使用手机扫描二维码快速添加订阅</div>
+                    <div class="qr-description">使用手机扫描二维码快速添加订阅</div> 
                 </div>
             </div>
         </div>
@@ -1682,11 +1753,15 @@ async function subHtml(request) {
             
             // 显示结果
             const resultSection = document.getElementById('result-section');
-            const resultUrl = document.getElementById('result-url');
+            const resultUrl = document.getElementById('subscriptionLink');
             const qrContainer = document.getElementById('qr-container');
+            const shortUrlBtn = document.getElementById('generateShortUrl');
             
             resultUrl.textContent = url;
             resultSection.style.display = 'block';
+            
+            // 启用短链按钮
+            shortUrlBtn.disabled = false;
             
             // 生成二维码
             generateQRCode(url);
@@ -1698,25 +1773,74 @@ async function subHtml(request) {
             resultSection.scrollIntoView({ behavior: 'smooth' });
         }
         
-        function copyToClipboard() {
-            const resultUrl = document.getElementById('result-url');
+        // 生成短链接函数
+        function generateShortUrl() {
+            const shortUrlBtn = document.getElementById('generateShortUrl');
+            if (shortUrlBtn.disabled) return;
+            
+            // 添加点击效果
+            shortUrlBtn.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                shortUrlBtn.style.transform = '';
+            }, 200);
+            
+            const subscriptionLink = document.getElementById('subscriptionLink').textContent;
+            const subscriptionLinkElement = document.getElementById('subscriptionLink');
+            
+            // 显示加载状态
+            subscriptionLinkElement.textContent = "正在生成短链接...";
+            
+            // Base64编码
+            const base64Encoded = btoa(subscriptionLink);
+            
+            // 发送POST请求到短链接服务
+            fetch('https://v1.mk/short', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'longUrl=' + encodeURIComponent(base64Encoded)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("短链接响应:", data);
+                if (data.Code === 1 && data.ShortUrl) {
+                    subscriptionLinkElement.textContent = data.ShortUrl;
+                    // 使用原有样式更新二维码
+                    generateQRCode(data.ShortUrl);
+                    subscriptionLinkElement.classList.add('copied');
+                    setTimeout(() => {
+                        subscriptionLinkElement.classList.remove('copied');
+                    }, 300);
+                } else {
+                    subscriptionLinkElement.textContent = "短链接生成失败，请重试";
+                }
+            })
+            .catch(error => {
+                console.error("生成短链接错误:", error);
+                subscriptionLinkElement.textContent = "短链接生成失败，请重试";
+            });
+        }
+        
+        function copyToClipboard(elementId = 'subscriptionLink') {
+            const resultUrl = document.getElementById(elementId);
             const url = resultUrl.textContent;
             
             // 使用 Clipboard API
             if (navigator.clipboard && window.isSecureContext) {
                 navigator.clipboard.writeText(url).then(() => {
-                    showCopySuccess();
+                    showCopySuccess(resultUrl);
                 }).catch(err => {
                     // 降级到传统方法
-                    fallbackCopyTextToClipboard(url);
+                    fallbackCopyTextToClipboard(url, resultUrl);
                 });
             } else {
                 // 降级到传统方法
-                fallbackCopyTextToClipboard(url);
+                fallbackCopyTextToClipboard(url, resultUrl);
             }
         }
         
-        function fallbackCopyTextToClipboard(text) {
+        function fallbackCopyTextToClipboard(text, element) {
             const textArea = document.createElement("textarea");
             textArea.value = text;
             
@@ -1731,7 +1855,7 @@ async function subHtml(request) {
             
             try {
                 document.execCommand('copy');
-                showCopySuccess();
+                showCopySuccess(element);
             } catch (err) {
                 alert('复制失败，请手动复制链接');
             }
@@ -1739,17 +1863,16 @@ async function subHtml(request) {
             document.body.removeChild(textArea);
         }
         
-        function showCopySuccess() {
-            const resultUrl = document.getElementById('result-url');
-            const originalClass = resultUrl.className;
-            const originalText = resultUrl.textContent;
+        function showCopySuccess(element) {
+            const originalClass = element.className;
+            const originalText = element.textContent;
             
-            resultUrl.classList.add('copy-success');
-            resultUrl.textContent = '✅ 复制成功！链接已复制到剪贴板';
+            element.classList.add('copy-success');
+            element.textContent = '✅ 复制成功！链接已复制到剪贴板';
             
             setTimeout(() => {
-                resultUrl.className = originalClass;
-                resultUrl.textContent = originalText;
+                element.className = originalClass;
+                element.textContent = originalText;
             }, 2000);
         }
         

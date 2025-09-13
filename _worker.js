@@ -1595,7 +1595,7 @@ async function subHtml(request) {
                                 </div>
                                 <div style="background: rgba(255, 193, 7, 0.1); border-left: 4px solid #ffc107; padding: 12px; margin-top: 10px; border-radius: 6px;">
                                     <span style="color: #ffc107; font-weight: 600;">⚠️ 重要提示：</span>
-                                    <span style="color: #e2e8f0;">建议绑定自定义域名（如：proxy.yourdomain.com），并优先使用自定义域名作为代理域名，这样更稳定可靠</span>
+                                    <span style="color: #e2e8f0;">必须绑定自定义域名（如：proxy.yourdomain.com），并优先使用自定义域名作为代理域名，这样更稳定可靠</span>
                                 </div>
                             </div>
                             
@@ -1901,8 +1901,46 @@ async function subHtml(request) {
                         saveTimeout = setTimeout(saveFormData, 1000); // 1秒后保存
                     };
                     
-                    element.addEventListener('input', debouncedSave);
-                    element.addEventListener('change', saveFormData);
+                    // 为proxyHost添加特殊的域名提取处理
+                    if (fieldId === 'proxyHost') {
+                        element.addEventListener('input', function() {
+                            // 清除之前的定时器
+                            clearTimeout(this._extractTimeout);
+                            
+                            // 设置新的定时器，500ms后自动提取域名
+                            this._extractTimeout = setTimeout(() => {
+                                const originalValue = this.value;
+                                const extractedDomain = extractDomain(originalValue);
+                                
+                                if (extractedDomain !== originalValue && extractedDomain) {
+                                    this.value = extractedDomain;
+                                    // 触发保存
+                                    saveFormData();
+                                    
+                                    // 显示提示
+                                    showDomainExtractionNotice(originalValue, extractedDomain);
+                                }
+                            }, 500);
+                            
+                            // 正常的防抖保存
+                            debouncedSave();
+                        });
+                        
+                        element.addEventListener('change', function() {
+                            const originalValue = this.value;
+                            const extractedDomain = extractDomain(originalValue);
+                            
+                            if (extractedDomain !== originalValue && extractedDomain) {
+                                this.value = extractedDomain;
+                                showDomainExtractionNotice(originalValue, extractedDomain);
+                            }
+                            
+                            saveFormData();
+                        });
+                    } else {
+                        element.addEventListener('input', debouncedSave);
+                        element.addEventListener('change', saveFormData);
+                    }
                 }
             });
             
@@ -2321,6 +2359,44 @@ async function subHtml(request) {
             }, 3000);
         }
         
+        // 显示域名提取提示
+        function showDomainExtractionNotice(originalValue, extractedDomain) {
+            const notification = document.createElement('div');
+            notification.innerHTML = \`
+                <div style="margin-bottom: 8px;">
+                    <span style="color: #ffc107; font-weight: 600;">🔧 自动优化：</span>
+                </div>
+                <div style="font-size: 13px; opacity: 0.9;">
+                    <div>原输入：<span style="color: #ff6b6b;">\${originalValue}</span></div>
+                    <div>已优化为：<span style="color: #00ff9d;">\${extractedDomain}</span></div>
+                </div>
+            \`;
+            notification.style.cssText = \`
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: rgba(26, 32, 44, 0.95);
+                color: #e2e8f0;
+                padding: 15px 20px;
+                border-radius: 10px;
+                font-weight: 500;
+                z-index: 10000;
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+                border: 1px solid rgba(255, 193, 7, 0.3);
+                backdrop-filter: blur(10px);
+                max-width: 300px;
+                word-break: break-all;
+            \`;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 4000);
+        }
+        
         // 代理模式切换函数
         function toggleProxyMode() {
             const proxyMode = document.querySelector('input[name="proxyMode"]:checked').value;
@@ -2371,6 +2447,37 @@ async function subHtml(request) {
                 customIpGroup.style.display = 'block';
                 subscriptionGeneratorGroup.style.display = 'none';
             }
+        }
+        
+        // 提取域名函数
+        function extractDomain(input) {
+            if (!input) return input;
+            
+            let cleaned = input.trim();
+            
+            // 如果包含协议，提取域名部分
+            if (cleaned.includes('://')) {
+                try {
+                    const url = new URL(cleaned);
+                    return url.hostname;
+                } catch (error) {
+                    // 如果URL解析失败，尝试手动提取
+                    const match = cleaned.match(/^https?:\\/\\/([^\\/]+)/);
+                    if (match) {
+                        return match[1];
+                    }
+                }
+            }
+            
+            // 移除路径部分（如果存在）
+            if (cleaned.includes('/')) {
+                cleaned = cleaned.split('/')[0];
+            }
+            
+            // 移除查询参数和hash（如果存在）
+            cleaned = cleaned.split('?')[0].split('#')[0];
+            
+            return cleaned;
         }
         
         // 智能处理 proxyip 格式的函数

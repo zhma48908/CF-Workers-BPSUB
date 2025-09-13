@@ -770,7 +770,7 @@ async function subHtml(request) {
         }
         
         textarea {
-            height: 220px;
+            height: 380px;
             resize: vertical;
             line-height: 1.5;
         }
@@ -1655,7 +1655,7 @@ async function subHtml(request) {
                 <!-- 自定义优选IP输入框 -->
                 <div class="form-group" id="custom-ip-group">
                     <label for="ips">优选IP列表（每行一个地址）：</label>
-                    <textarea id="ips" placeholder="ADD示例：&#10;www.visa.cn#优选域名&#10;127.0.0.1:1234#CFnat&#10;[2606:4700::]:2053#IPv6&#10;&#10;注意：&#10;每行一个地址，格式为 地址:端口#备注&#10;IPv6地址需要用中括号括起来，如：[2606:4700::]:2053&#10;端口不写，默认为 443 端口，如：visa.cn#优选域名&#10;&#10;ADDAPI示例：&#10;https://raw.githubusercontent.com/cmliu/WorkerVless2sub/refs/heads/main/addressesapi.txt&#10;&#10;注意：ADDAPI直接添加直链即可"></textarea>
+                    <textarea id="ips" placeholder="ADD示例：&#10;www.visa.cn#优选域名&#10;127.0.0.1:1234#CFnat&#10;[2606:4700::]:2053#IPv6&#10;&#10;注意：&#10;每行一个地址，格式为 地址:端口#备注&#10;IPv6地址需要用中括号括起来，如：[2606:4700::]:2053&#10;端口不写，默认为 443 端口，如：visa.cn#优选域名&#10;&#10;ADDAPI示例：&#10;https://raw.githubusercontent.com/cmliu/WorkerVless2sub/main/addressesapi.txt&#10;&#10;注意：ADDAPI直接添加直链即可"></textarea>
                     <div class="example">📝 格式说明：
 • 域名&IPv4: www.visa.cn#优选域名 或 127.0.0.1:1234#CFnat
 • IPv6: [2606:4700::]:2053#IPv6地址

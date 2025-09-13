@@ -1452,6 +1452,17 @@ async function subHtml(request) {
             }
         }
         
+        /* 代码框点击复制样式 */
+        #workerCode:hover {
+            border-color: rgba(0, 255, 255, 0.4) !important;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.2) !important;
+        }
+        
+        #workerCode:active {
+            background: rgba(26, 32, 44, 0.95) !important;
+            transform: scale(0.999);
+        }
+        
         /* 选项卡响应式 */
         @media (max-width: 600px) {
             .tab-button {
@@ -1550,9 +1561,9 @@ async function subHtml(request) {
                                     1️⃣ 复制下方代码 → 2️⃣ 进入Cloudflare Workers → 3️⃣ 创建新Worker → 4️⃣ 粘贴代码并部署
                                 </p>
                                 <div style="position: relative;">
-                                    <textarea readonly style="
+                                    <textarea readonly onclick="copyWorkerCode()" style="
                                         width: 100%; 
-                                        height: 120px; 
+                                        height: 220px; 
                                         background: #1a202c; 
                                         border: 2px solid rgba(0, 255, 255, 0.2);
                                         border-radius: 8px; 
@@ -1562,7 +1573,9 @@ async function subHtml(request) {
                                         color: #e2e8f0; 
                                         resize: vertical;
                                         line-height: 1.4;
-                                    " id="workerCode">正在加载代码...</textarea>
+                                        cursor: pointer;
+                                        transition: all 0.3s ease;
+                                    " id="workerCode" title="点击复制代码">正在加载代码...</textarea>
                                     <button onclick="copyWorkerCode()" style="
                                         position: absolute;
                                         top: 10px;
@@ -1580,9 +1593,9 @@ async function subHtml(request) {
                                         📋 复制代码
                                     </button>
                                 </div>
-                                <div style="background: rgba(0, 255, 157, 0.1); border-left: 4px solid #00ff9d; padding: 12px; margin-top: 10px; border-radius: 6px;">
-                                    <span style="color: #00ff9d; font-weight: 600;">✅ 部署成功后：</span>
-                                    <span style="color: #e2e8f0;">使用你的Worker域名（如：your-worker.your-username.workers.dev）作为代理域名</span>
+                                <div style="background: rgba(255, 193, 7, 0.1); border-left: 4px solid #ffc107; padding: 12px; margin-top: 10px; border-radius: 6px;">
+                                    <span style="color: #ffc107; font-weight: 600;">⚠️ 重要提示：</span>
+                                    <span style="color: #e2e8f0;">建议绑定自定义域名（如：proxy.yourdomain.com），并优先使用自定义域名作为代理域名，这样更稳定可靠</span>
                                 </div>
                             </div>
                             
@@ -1609,6 +1622,10 @@ async function subHtml(request) {
                                 <div style="background: rgba(0, 255, 157, 0.1); border-left: 4px solid #00ff9d; padding: 12px; border-radius: 6px;">
                                     <span style="color: #00ff9d; font-weight: 600;">✅ 部署成功后：</span>
                                     <span style="color: #e2e8f0;">使用你的Pages域名（如：your-project.pages.dev）作为代理域名</span>
+                                </div>
+                                <div style="background: rgba(255, 193, 7, 0.1); border-left: 4px solid #ffc107; padding: 12px; margin-top: 10px; border-radius: 6px;">
+                                    <span style="color: #ffc107; font-weight: 600;">⚠️ 重要提示：</span>
+                                    <span style="color: #e2e8f0;">建议绑定自定义域名（如：proxy.yourdomain.com），并优先使用自定义域名作为代理域名，这样更稳定可靠</span>
                                 </div>
                             </div>
                         </div>
@@ -2189,14 +2206,20 @@ async function subHtml(request) {
             const workerCodeElement = document.getElementById('workerCode');
             const code = workerCodeElement.value;
             
+            // 添加点击视觉反馈
+            workerCodeElement.style.background = 'rgba(0, 255, 255, 0.1)';
+            workerCodeElement.style.borderColor = 'rgba(0, 255, 255, 0.6)';
+            
             if (navigator.clipboard && window.isSecureContext) {
                 navigator.clipboard.writeText(code).then(() => {
-                    showCopySuccessForButton('workerCode');
+                    showCopySuccessForCodeBox();
                 }).catch(err => {
                     fallbackCopyTextToClipboard(code, workerCodeElement);
+                    showCopySuccessForCodeBox();
                 });
             } else {
                 fallbackCopyTextToClipboard(code, workerCodeElement);
+                showCopySuccessForCodeBox();
             }
         }
         
@@ -2235,6 +2258,40 @@ async function subHtml(request) {
                     button.style.color = '#00ffff';
                 }, 2000);
             }
+        }
+        
+        // 显示复制成功（针对代码框）
+        function showCopySuccessForCodeBox() {
+            const workerCodeElement = document.getElementById('workerCode');
+            const button = workerCodeElement.nextElementSibling;
+            
+            // 更新代码框样式
+            workerCodeElement.style.background = 'rgba(0, 255, 157, 0.15)';
+            workerCodeElement.style.borderColor = '#00ff9d';
+            workerCodeElement.style.boxShadow = '0 0 15px rgba(0, 255, 157, 0.3)';
+            
+            // 更新按钮样式
+            if (button) {
+                const originalText = button.textContent;
+                button.textContent = '✅ 已复制!';
+                button.style.background = 'rgba(0, 255, 157, 0.3)';
+                button.style.borderColor = '#00ff9d';
+                button.style.color = '#00ff9d';
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.background = 'rgba(0, 255, 255, 0.2)';
+                    button.style.borderColor = 'rgba(0, 255, 255, 0.4)';
+                    button.style.color = '#00ffff';
+                }, 2000);
+            }
+            
+            // 恢复代码框原始样式
+            setTimeout(() => {
+                workerCodeElement.style.background = '#1a202c';
+                workerCodeElement.style.borderColor = 'rgba(0, 255, 255, 0.2)';
+                workerCodeElement.style.boxShadow = 'none';
+            }, 2000);
         }
         
         // 显示下载成功

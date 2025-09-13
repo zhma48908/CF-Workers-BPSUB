@@ -2197,7 +2197,7 @@ async function subHtml(request) {
                 document.getElementById('workerCode').value = code;
             } catch (error) {
                 console.error('加载Worker代码失败:', error);
-                document.getElementById('workerCode').value = '// 加载代码失败，请稍后重试\\n// 或手动从 GitHub 获取最新代码';
+                document.getElementById('workerCode').value = '加载代码失败，请自行从\\nhttps://raw.githubusercontent.com/cmliu/CF-Workers-BPSUB/main/proxy_host/_worker.js\\n获取最新代码';
             }
         }
         

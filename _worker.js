@@ -1901,8 +1901,8 @@ async function subHtml(request) {
                         saveTimeout = setTimeout(saveFormData, 1000); // 1秒后保存
                     };
                     
-                    // 为proxyHost添加特殊的域名提取处理
-                    if (fieldId === 'proxyHost') {
+                    // 为proxyHost和subGenerator添加特殊的域名提取处理
+                    if (fieldId === 'proxyHost' || fieldId === 'subGenerator') {
                         element.addEventListener('input', function() {
                             // 清除之前的定时器
                             clearTimeout(this._extractTimeout);

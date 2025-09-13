@@ -40,7 +40,7 @@ export default {
                     headers: { 'Content-Type': 'application/json' },
                 });
             }
-            
+
             subConverter = url.searchParams.get('subapi') || subConverter;
             if (subConverter.includes("http://")) {
                 subConverter = subConverter.split("//")[1];
@@ -1390,6 +1390,18 @@ async function subHtml(request) {
         </div>
         
         <div class="form-container">
+            <!-- 代理域名设置 -->
+            <div class="section">
+                <div class="section-title">🌐 代理域名设置</div>
+                <div class="form-group">
+                    <label for="proxyHost">HOST：</label>
+                    <input type="text" id="proxyHost" placeholder="proxy.pages.dev" value="">
+                    <div class="example">🔗 设置用于代理的域名地址，例如：proxy.pages.dev
+这个域名将用于代理连接到Cloudflare服务
+                    </div>
+                </div>
+            </div>
+            
             <!-- 优选IP部分 -->
             <div class="section">
                 <div class="section-title">⚡️ 优选IP设置</div>
@@ -1570,6 +1582,7 @@ async function subHtml(request) {
             const formData = {
                 ips: document.getElementById('ips').value,
                 subGenerator: document.getElementById('subGenerator').value,
+                proxyHost: document.getElementById('proxyHost').value,
                 proxyip: document.getElementById('proxyip').value,
                 socks5: document.getElementById('socks5').value,
                 subapi: document.getElementById('subapi').value,
@@ -1603,6 +1616,7 @@ async function subHtml(request) {
                 // 填充表单字段
                 if (formData.ips) document.getElementById('ips').value = formData.ips;
                 if (formData.subGenerator) document.getElementById('subGenerator').value = formData.subGenerator;
+                if (formData.proxyHost) document.getElementById('proxyHost').value = formData.proxyHost;
                 if (formData.proxyip) document.getElementById('proxyip').value = formData.proxyip;
                 if (formData.socks5) document.getElementById('socks5').value = formData.socks5;
                 if (formData.subapi) document.getElementById('subapi').value = formData.subapi;
@@ -1643,7 +1657,7 @@ async function subHtml(request) {
         
         // 设置表单字段的自动保存事件监听器
         function setupAutoSave() {
-            const fields = ['ips', 'subGenerator', 'proxyip', 'socks5', 'subapi', 'subconfig'];
+            const fields = ['ips', 'subGenerator', 'proxyHost', 'proxyip', 'socks5', 'subapi', 'subconfig'];
             
             // 为文本输入字段添加事件监听
             fields.forEach(fieldId => {
@@ -1681,10 +1695,17 @@ async function subHtml(request) {
         function generateSubscription() {
             const ips = document.getElementById('ips').value.trim();
             const subGenerator = document.getElementById('subGenerator').value.trim();
+            const proxyHost = document.getElementById('proxyHost').value.trim();
             const proxyip = document.getElementById('proxyip').value.trim();
             const socks5 = document.getElementById('socks5').value.trim();
             const subapi = document.getElementById('subapi').value.trim();
             const subconfig = document.getElementById('subconfig').value.trim();
+            
+            // 检查代理域名是否为空
+            if (!proxyHost) {
+                alert('⚠️ 代理域名不能为空！\\n\\n请输入代理域名，例如：proxy.pages.dev');
+                return;
+            }
             
             // 获取选择的IP模式和代理模式
             const ipMode = document.querySelector('input[name="ipMode"]:checked').value;
@@ -1698,6 +1719,9 @@ async function subHtml(request) {
             let url = \`https://\${currentDomain}/sub\`;
             
             const params = new URLSearchParams();
+            
+            // 添加代理域名参数
+            params.append('host', proxyHost);
             
             // 根据IP模式处理参数
             if (ipMode === 'subscription') {

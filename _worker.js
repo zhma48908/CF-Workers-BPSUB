@@ -1392,7 +1392,7 @@ async function subHtml(request) {
         <div class="form-container">
             <!-- 代理域名设置 -->
             <div class="section">
-                <div class="section-title">🌐 代理域名设置</div>
+                <div class="section-title">🌐 代理域名设置(必填)</div>
                 <div class="form-group">
                     <label for="proxyHost">HOST：</label>
                     <input type="text" id="proxyHost" placeholder="proxy.pages.dev" value="">
@@ -1404,7 +1404,7 @@ async function subHtml(request) {
             
             <!-- 优选IP部分 -->
             <div class="section">
-                <div class="section-title">⚡️ 优选IP设置</div>
+                <div class="section-title">⚡️ 优选IP设置(必填)</div>
                 
                 <!-- 优选IP模式选择 -->
                 <div class="form-group">
@@ -1444,7 +1444,7 @@ async function subHtml(request) {
             
             <!-- PROXYIP部分 -->
             <div class="section collapsible collapsed">
-                <div class="section-title" onclick="toggleSection(this)">🔧 落地IP设置</div>
+                <div class="section-title" onclick="toggleSection(this)">🔧 落地IP设置(可选)</div>
                 <div class="section-content">
                     <!-- 选项切换 -->
                     <div class="form-group">
@@ -1527,7 +1527,7 @@ async function subHtml(request) {
             
             <!-- 订阅转换设置 -->
             <div class="section collapsible collapsed">
-                <div class="section-title" onclick="toggleSection(this)">⚙️ 订阅转换设置</div>
+                <div class="section-title" onclick="toggleSection(this)">⚙️ 订阅转换设置(可选)</div>
                 <div class="section-content">
                     <div class="form-group">
                         <label for="subapi">订阅转换后端：</label>

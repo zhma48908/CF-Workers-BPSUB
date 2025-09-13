@@ -34,6 +34,13 @@ export default {
             userAgent.includes('subconverter');
 
         if (url.pathname === '/sub') {
+            if (!url.searchParams.has('host')) {
+                return new Response(JSON.stringify({ error: '请提供 host 参数' }), {
+                    status: 400,
+                    headers: { 'Content-Type': 'application/json' },
+                });
+            }
+            
             subConverter = url.searchParams.get('subapi') || subConverter;
             if (subConverter.includes("http://")) {
                 subConverter = subConverter.split("//")[1];
@@ -43,7 +50,7 @@ export default {
             }
             subConfig = url.searchParams.get('subconfig') || subConfig;
 
-            const uuid_json = await getSubData();
+            const uuid_json = await getSubData(url.searchParams.get('host'));
             proxyIP = url.searchParams.get('proxyip') || proxyIP;
             const socks5 = (url.searchParams.has('socks5') && url.searchParams.get('socks5') != '') ? url.searchParams.get('socks5') : null;
             const 全局socks5 = (url.searchParams.has('global')) ? true : false;
@@ -283,8 +290,15 @@ export default {
                 return new Response(返回订阅内容, { headers: responseHeaders });
             }
         } else if (url.pathname === '/uuid.json') {
+            if (!url.searchParams.has('host')) {
+                return new Response(JSON.stringify({ error: '请提供 host 参数' }), {
+                    status: 400,
+                    headers: { 'Content-Type': 'application/json' },
+                });
+            }
+
             try {
-                const result = await getSubData();
+                const result = await getSubData(url.searchParams.get('host'));
                 return new Response(JSON.stringify(result, null, 2), {
                     headers: { 'Content-Type': 'application/json' },
                 });
@@ -300,7 +314,7 @@ export default {
     }
 };
 
-async function getSubData() {
+async function getSubData(host) {
     function parseVless(vlessUrl) {
         try {
             const url = vlessUrl.substring(8);
@@ -318,7 +332,7 @@ async function getSubData() {
             return null;
         }
     }
-    const response = await fetch('https://cfxr.eu.org/getSub');
+    const response = await fetch('https://cfxr.eu.org/getSub?host=' + host);
     if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
     }

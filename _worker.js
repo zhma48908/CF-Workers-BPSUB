@@ -308,6 +308,49 @@ export default {
                     headers: { 'Content-Type': 'application/json' },
                 });
             }
+        } else if (url.pathname === '/proxy_host.zip') {
+            // 代理主机压缩包下载
+            try {
+                const zipResponse = await fetch('https://raw.githubusercontent.com/cmliu/CF-Workers-BPSUB/main/proxy_host/proxy_host.zip');
+                if (!zipResponse.ok) {
+                    throw new Error('下载失败');
+                }
+                
+                const zipData = await zipResponse.arrayBuffer();
+                return new Response(zipData, {
+                    headers: {
+                        'Content-Type': 'application/zip',
+                        'Content-Disposition': 'attachment; filename="proxy_host.zip"',
+                        'Cache-Control': 'public, max-age=3600'
+                    }
+                });
+            } catch (error) {
+                return new Response('下载失败: ' + error.message, {
+                    status: 500,
+                    headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+                });
+            }
+        } else if (url.pathname === '/proxy_host.js') {
+            // 代理主机Worker代码获取
+            try {
+                const jsResponse = await fetch('https://raw.githubusercontent.com/cmliu/CF-Workers-BPSUB/main/proxy_host/_worker.js');
+                if (!jsResponse.ok) {
+                    throw new Error('获取代码失败');
+                }
+                
+                const jsCode = await jsResponse.text();
+                return new Response(jsCode, {
+                    headers: {
+                        'Content-Type': 'text/plain; charset=utf-8',
+                        'Cache-Control': 'public, max-age=300' // 5分钟缓存，保证及时更新
+                    }
+                });
+            } catch (error) {
+                return new Response('获取代码失败: ' + error.message, {
+                    status: 500,
+                    headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+                });
+            }
         } else {
             return await subHtml(request);
         }
@@ -1328,6 +1371,99 @@ async function subHtml(request) {
             height: 24px;
         }
         
+        /* 选项卡样式 */
+        .tabs-container {
+            margin-top: 20px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .tabs-header {
+            display: flex;
+            background: rgba(26, 32, 44, 0.8);
+            border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+        }
+        
+        .tab-button {
+            flex: 1;
+            padding: 15px 20px;
+            background: transparent;
+            border: none;
+            color: #a0aec0;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .tab-button:hover {
+            color: #e2e8f0;
+            background: rgba(0, 255, 255, 0.1);
+        }
+        
+        .tab-button.active {
+            color: #00ffff;
+            background: rgba(0, 255, 255, 0.15);
+        }
+        
+        .tab-button.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #00ffff, #00ff9d);
+        }
+        
+        .tab-button:not(:last-child) {
+            border-right: 1px solid rgba(0, 255, 255, 0.2);
+        }
+        
+        .tab-content {
+            padding: 25px;
+            background: rgba(45, 55, 72, 0.8);
+            min-height: 200px;
+        }
+        
+        .tab-panel {
+            display: none;
+            animation: fadeInUp 0.3s ease-out;
+        }
+        
+        .tab-panel.active {
+            display: block;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* 选项卡响应式 */
+        @media (max-width: 600px) {
+            .tab-button {
+                padding: 12px 15px;
+                font-size: 13px;
+            }
+            
+            .tab-content {
+                padding: 20px 15px;
+            }
+        }
+        
         /* 响应式处理 */
         @media (max-width: 500px) {
             .socks5-header {
@@ -1396,8 +1532,86 @@ async function subHtml(request) {
                 <div class="form-group">
                     <label for="proxyHost">HOST：</label>
                     <input type="text" id="proxyHost" placeholder="proxy.pages.dev" value="">
-                    <div class="example">🔗 设置用于代理的域名地址，例如：proxy.pages.dev
-这个域名将用于代理连接到Cloudflare服务
+                    
+                    <!-- 部署教程选项卡 -->
+                    <div class="tabs-container">
+                        <div class="tabs-header">
+                            <button class="tab-button active" onclick="switchTab('workers')" id="workers-tab">
+                                ⚡ CF Workers 部署
+                            </button>
+                            <button class="tab-button" onclick="switchTab('pages')" id="pages-tab">
+                                📄 CF Pages 部署
+                            </button>
+                        </div>
+                        <div class="tab-content">
+                            <!-- Workers 选项卡内容 -->
+                            <div class="tab-panel active" id="workers-panel">
+                                <p style="color: #e2e8f0; margin-bottom: 15px; line-height: 1.6;">
+                                    1️⃣ 复制下方代码 → 2️⃣ 进入Cloudflare Workers → 3️⃣ 创建新Worker → 4️⃣ 粘贴代码并部署
+                                </p>
+                                <div style="position: relative;">
+                                    <textarea readonly style="
+                                        width: 100%; 
+                                        height: 120px; 
+                                        background: #1a202c; 
+                                        border: 2px solid rgba(0, 255, 255, 0.2);
+                                        border-radius: 8px; 
+                                        padding: 15px; 
+                                        font-family: 'JetBrains Mono', monospace; 
+                                        font-size: 13px; 
+                                        color: #e2e8f0; 
+                                        resize: vertical;
+                                        line-height: 1.4;
+                                    " id="workerCode">正在加载代码...</textarea>
+                                    <button onclick="copyWorkerCode()" style="
+                                        position: absolute;
+                                        top: 10px;
+                                        right: 10px;
+                                        background: rgba(0, 255, 255, 0.2);
+                                        color: #00ffff;
+                                        border: 1px solid rgba(0, 255, 255, 0.4);
+                                        border-radius: 6px;
+                                        padding: 6px 12px;
+                                        font-size: 12px;
+                                        cursor: pointer;
+                                        transition: all 0.3s ease;
+                                    " onmouseover="this.style.background='rgba(0, 255, 255, 0.3)'" 
+                                       onmouseout="this.style.background='rgba(0, 255, 255, 0.2)'">
+                                        📋 复制代码
+                                    </button>
+                                </div>
+                                <div style="background: rgba(0, 255, 157, 0.1); border-left: 4px solid #00ff9d; padding: 12px; margin-top: 10px; border-radius: 6px;">
+                                    <span style="color: #00ff9d; font-weight: 600;">✅ 部署成功后：</span>
+                                    <span style="color: #e2e8f0;">使用你的Worker域名（如：your-worker.your-username.workers.dev）作为代理域名</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Pages 选项卡内容 -->
+                            <div class="tab-panel" id="pages-panel">
+                                <p style="color: #e2e8f0; margin-bottom: 15px; line-height: 1.6;">
+                                    1️⃣ 下载压缩包 → 2️⃣ 进入Cloudflare Pages → 3️⃣ 上传项目 → 4️⃣ 部署完成
+                                </p>
+                                <button onclick="downloadProxyHost()" style="
+                                    background: linear-gradient(135deg, rgba(251, 146, 60, 0.2) 0%, rgba(245, 101, 101, 0.2) 100%);
+                                    color: #ffffff;
+                                    border: 2px solid rgba(251, 146, 60, 0.5);
+                                    border-radius: 8px;
+                                    padding: 12px 20px;
+                                    font-size: 14px;
+                                    font-weight: 600;
+                                    cursor: pointer;
+                                    transition: all 0.3s ease;
+                                    margin-bottom: 10px;
+                                " onmouseover="this.style.borderColor='rgba(251, 146, 60, 0.7)'; this.style.background='linear-gradient(135deg, rgba(251, 146, 60, 0.3) 0%, rgba(245, 101, 101, 0.3) 100%)'" 
+                                   onmouseout="this.style.borderColor='rgba(251, 146, 60, 0.5)'; this.style.background='linear-gradient(135deg, rgba(251, 146, 60, 0.2) 0%, rgba(245, 101, 101, 0.2) 100%)'">
+                                    📦 下载 proxy_host.zip
+                                </button>
+                                <div style="background: rgba(0, 255, 157, 0.1); border-left: 4px solid #00ff9d; padding: 12px; border-radius: 6px;">
+                                    <span style="color: #00ff9d; font-weight: 600;">✅ 部署成功后：</span>
+                                    <span style="color: #e2e8f0;">使用你的Pages域名（如：your-project.pages.dev）作为代理域名</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1943,6 +2157,113 @@ async function subHtml(request) {
             section.classList.toggle('collapsed');
         }
         
+        // 选项卡切换函数
+        function switchTab(tabName) {
+            // 移除所有活动状态
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+            
+            // 激活当前选项卡
+            document.getElementById(tabName + '-tab').classList.add('active');
+            document.getElementById(tabName + '-panel').classList.add('active');
+        }
+        
+        // 加载Worker代码
+        async function loadWorkerCode() {
+            try {
+                const currentDomain = window.location.host;
+                const response = await fetch(\`https://\${currentDomain}/proxy_host.js\`);
+                if (!response.ok) {
+                    throw new Error('获取代码失败');
+                }
+                const code = await response.text();
+                document.getElementById('workerCode').value = code;
+            } catch (error) {
+                console.error('加载Worker代码失败:', error);
+                document.getElementById('workerCode').value = '// 加载代码失败，请稍后重试\\n// 或手动从 GitHub 获取最新代码';
+            }
+        }
+        
+        // 复制Worker代码
+        function copyWorkerCode() {
+            const workerCodeElement = document.getElementById('workerCode');
+            const code = workerCodeElement.value;
+            
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(code).then(() => {
+                    showCopySuccessForButton('workerCode');
+                }).catch(err => {
+                    fallbackCopyTextToClipboard(code, workerCodeElement);
+                });
+            } else {
+                fallbackCopyTextToClipboard(code, workerCodeElement);
+            }
+        }
+        
+        // 下载代理主机压缩包
+        function downloadProxyHost() {
+            const currentDomain = window.location.host;
+            const downloadUrl = \`https://\${currentDomain}/proxy_host.zip\`;
+            
+            // 创建临时下载链接
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = 'proxy_host.zip';
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // 显示下载提示
+            showDownloadSuccess();
+        }
+        
+        // 显示复制成功（针对按钮）
+        function showCopySuccessForButton(elementId) {
+            const button = document.querySelector(\`#\${elementId} + button\`);
+            if (button) {
+                const originalText = button.textContent;
+                button.textContent = '✅ 已复制!';
+                button.style.background = 'rgba(0, 255, 157, 0.3)';
+                button.style.borderColor = '#00ff9d';
+                button.style.color = '#00ff9d';
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.background = 'rgba(0, 255, 255, 0.2)';
+                    button.style.borderColor = 'rgba(0, 255, 255, 0.4)';
+                    button.style.color = '#00ffff';
+                }, 2000);
+            }
+        }
+        
+        // 显示下载成功
+        function showDownloadSuccess() {
+            // 可以添加一个临时的提示信息
+            const notification = document.createElement('div');
+            notification.textContent = '📦 开始下载 proxy_host.zip...';
+            notification.style.cssText = \`
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: rgba(0, 255, 157, 0.9);
+                color: #1a202c;
+                padding: 12px 20px;
+                border-radius: 8px;
+                font-weight: 600;
+                z-index: 10000;
+                box-shadow: 0 4px 15px rgba(0, 255, 157, 0.3);
+            \`;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 3000);
+        }
+        
         // 代理模式切换函数
         function toggleProxyMode() {
             const proxyMode = document.querySelector('input[name="proxyMode"]:checked').value;
@@ -2072,6 +2393,9 @@ async function subHtml(request) {
         // 页面加载完成后的初始化
         document.addEventListener('DOMContentLoaded', function() {
             console.log('页面加载完成，开始初始化...');
+            
+            // 加载Worker代码
+            loadWorkerCode();
             
             // 首先加载缓存的表单数据
             loadFormData();

@@ -1,8 +1,10 @@
-# 🚀 CF-Workers-BPSUB
+# 🚀 BPSUB - Cloudflare Snipaste 订阅生成器
+![bpsub](./bpsub.jpg)
+
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-orange)](https://workers.cloudflare.com/)
 [![Telegram](https://img.shields.io/badge/Telegram-@bestip_one-blue)](https://t.me/bestip_one)
 
-> **一个运行在 Cloudflare Workers 上的智能 VLESS 订阅生成器，专为白嫖哥节点服务优化**
+> **一个运行在 Cloudflare Workers 上的 Snipaste 订阅生成器，专为白嫖哥节点服务优化**
 
 ## ✨ 项目简介
 

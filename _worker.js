@@ -218,7 +218,7 @@ export default {
                 if (url.searchParams.has('ips') && url.searchParams.get('ips').trim() !== '') ips = await 整理成数组(url.searchParams.get('ips'));
 
                 const 标题 = `${url.hostname}:443#${FileName} 订阅到期时间 ${getDateString()}`;
-                let add = [标题];
+                let add = [];
                 let addapi = [];
                 for (const ip of ips) {
                     if (ip.startsWith('http') && ip.includes('://')) {

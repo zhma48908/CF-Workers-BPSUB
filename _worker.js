@@ -315,7 +315,7 @@ export default {
                 if (!zipResponse.ok) {
                     throw new Error('下载失败');
                 }
-                
+
                 const zipData = await zipResponse.arrayBuffer();
                 return new Response(zipData, {
                     headers: {
@@ -337,7 +337,7 @@ export default {
                 if (!jsResponse.ok) {
                     throw new Error('获取代码失败');
                 }
-                
+
                 const jsCode = await jsResponse.text();
                 return new Response(jsCode, {
                     headers: {
@@ -1762,13 +1762,13 @@ async function subHtml(request) {
                 <div class="section-content">
                     <div class="form-group">
                         <label for="subapi">订阅转换后端：</label>
-                        <input type="text" id="subapi" placeholder="https://subapi.cmliussss.net" value="">
+                        <input type="text" id="subapi" placeholder="${subProtocol}://${subConverter}" value="">
                         <div class="example">🔄 用于将生成的VLESS链接转换为Clash/SingBox等格式的后端服务
                         </div>
                     </div>
                     <div class="form-group">
                         <label for="subconfig">订阅转换配置文件：</label>
-                        <input type="text" id="subconfig" placeholder="https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Mini.ini" value="">
+                        <input type="text" id="subconfig" placeholder="${subConfig}" value="">
                         <div class="example">📋 订阅转换时使用的配置文件URL，定义规则和策略
                         </div>
                     </div>

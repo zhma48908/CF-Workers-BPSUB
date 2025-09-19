@@ -1595,7 +1595,7 @@ async function subHtml(request, hostLength = hosts.length) {
                                 <div style="position: relative;">
                                     <textarea readonly onclick="copyWorkerCode()" style="
                                         width: 100%; 
-                                        height: 220px; 
+                                        height: 238px; 
                                         background: #1a202c; 
                                         border: 2px solid rgba(0, 255, 255, 0.2);
                                         border-radius: 8px; 

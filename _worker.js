@@ -8,7 +8,7 @@ let ips = ['3Q.bestip-one.cf.090227.xyz#感谢白嫖哥t.me/bestip_one'];
 let FileName = 'BPSUB';
 let EndPS = '';
 const regex = /^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|\[.*\]):?(\d+)?#?(.*)?$/;
-
+let hosts = [];
 export default {
     async fetch(request, env, ctx) {
         subConverter = env.SUBAPI || subConverter;
@@ -25,6 +25,14 @@ export default {
         EndPS = env.PS || EndPS;
 
         const url = new URL(request.url);
+        // 获取和处理 host 参数
+        if (url.searchParams.has('host')) {
+            hosts = url.searchParams.get('host').split('|').filter(host => host.trim());
+        } else if (env.HOST) {
+            hosts = await 整理成数组(env.HOST);
+            hosts = hosts.filter(host => host && host.trim());
+        }
+        let bphost = hosts.length > 0 ? hosts[Math.floor(Math.random() * hosts.length)].trim() : null;
         const UA = request.headers.get('User-Agent') || 'null';
         const userAgent = UA.toLowerCase();
         const 需要订阅转换的UA = ['clash', 'meta', 'mihomo', 'sing-box', 'singbox'];
@@ -34,12 +42,15 @@ export default {
             userAgent.includes('subconverter');
 
         if (url.pathname === '/sub') {
-            if (!url.searchParams.has('host')) {
-                return new Response(JSON.stringify({ error: '请提供 host 参数' }), {
+            if (!bphost) {
+                return new Response(JSON.stringify({
+                    error: '请提供有效的 host 参数',
+                    message: '可以通过 URL 参数 ?host=域名 或环境变量 HOST 提供'
+                }), {
                     status: 400,
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json; charset=utf-8' },
                 });
-            }
+            } else if (bphost.includes("*")) bphost = bphost.replace("*", Date.now().toString());
 
             subConverter = url.searchParams.get('subapi') || subConverter;
             if (subConverter.includes("http://")) {
@@ -50,7 +61,7 @@ export default {
             }
             subConfig = url.searchParams.get('subconfig') || subConfig;
 
-            const uuid_json = await getSubData(url.searchParams.get('host'));
+            const uuid_json = await getSubData(bphost);
             proxyIP = url.searchParams.get('proxyip') || proxyIP;
             const socks5 = (url.searchParams.has('socks5') && url.searchParams.get('socks5') != '') ? url.searchParams.get('socks5') : null;
             const 全局socks5 = (url.searchParams.has('global')) ? true : false;
@@ -352,7 +363,7 @@ export default {
                 });
             }
         } else {
-            return await subHtml(request);
+            return await subHtml(request, hosts.length);
         }
     }
 };
@@ -494,7 +505,7 @@ function getDateString() {
     return `${year}/${month}/${day} ${hours}:${minutes}:${seconds}`;
 }
 
-async function subHtml(request) {
+async function subHtml(request, hostLength = hosts.length) {
     const HTML = `
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -1969,9 +1980,9 @@ async function subHtml(request) {
             const socks5 = document.getElementById('socks5').value.trim();
             const subapi = document.getElementById('subapi').value.trim();
             const subconfig = document.getElementById('subconfig').value.trim();
-            
+            const hostLength = ${hostLength};
             // 检查代理域名是否为空
-            if (!proxyHost) {
+            if (!proxyHost && hostLength < 1) {
                 alert('⚠️ 代理域名不能为空！\\n\\n请输入代理域名，例如：proxy.pages.dev');
                 return;
             }
@@ -1989,8 +2000,7 @@ async function subHtml(request) {
             
             const params = new URLSearchParams();
             
-            // 添加代理域名参数
-            params.append('host', proxyHost);
+            if (proxyHost) params.append('host', proxyHost);
             
             // 根据IP模式处理参数
             if (ipMode === 'subscription') {

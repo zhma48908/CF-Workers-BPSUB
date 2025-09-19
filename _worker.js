@@ -1649,41 +1649,42 @@ async function subHtml(request, hostLength = hosts.length) {
             </div>
             
             <!-- 优选IP部分 -->
-            <div class="section">
-                <div class="section-title">⚡️ 优选IP设置(可选)</div>
-                
-                <!-- 优选IP模式选择 -->
-                <div class="form-group">
-                    <label style="margin-bottom: 15px;">选择优选IP模式：</label>
-                    <div class="proxy-mode-selector">
-                        <label class="radio-option">
-                            <input type="radio" name="ipMode" value="custom" checked onchange="toggleIPMode()">
-                            <span class="radio-label">🎯 自定义优选IP</span>
-                        </label>
-                        <label class="radio-option">
-                            <input type="radio" name="ipMode" value="subscription" onchange="toggleIPMode()">
-                            <span class="radio-label">🔗 优选订阅生成器</span>
-                        </label>
+            <div class="section collapsible collapsed">
+                <div class="section-title" onclick="toggleSection(this)">⚡️ 优选IP设置(可选)</div>
+                <div class="section-content">
+                    <!-- 优选IP模式选择 -->
+                    <div class="form-group">
+                        <label style="margin-bottom: 15px;">选择优选IP模式：</label>
+                        <div class="proxy-mode-selector">
+                            <label class="radio-option">
+                                <input type="radio" name="ipMode" value="custom" checked onchange="toggleIPMode()">
+                                <span class="radio-label">🎯 自定义优选IP</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="ipMode" value="subscription" onchange="toggleIPMode()">
+                                <span class="radio-label">🔗 优选订阅生成器</span>
+                            </label>
+                        </div>
                     </div>
-                </div>
-                
-                <!-- 自定义优选IP输入框 -->
-                <div class="form-group" id="custom-ip-group">
-                    <label for="ips">优选IP列表（每行一个地址）：</label>
-                    <textarea id="ips" placeholder="ADD示例：&#10;www.visa.cn#优选域名&#10;127.0.0.1:1234#CFnat&#10;[2606:4700::]:2053#IPv6&#10;&#10;注意：&#10;每行一个地址，格式为 地址:端口#备注&#10;IPv6地址需要用中括号括起来，如：[2606:4700::]:2053&#10;端口不写，默认为 443 端口，如：visa.cn#优选域名&#10;&#10;ADDAPI示例：&#10;https://raw.githubusercontent.com/cmliu/WorkerVless2sub/main/addressesapi.txt&#10;&#10;注意：ADDAPI直接添加直链即可"></textarea>
-                    <div class="example">📝 格式说明：
+                    
+                    <!-- 自定义优选IP输入框 -->
+                    <div class="form-group" id="custom-ip-group">
+                        <label for="ips">优选IP列表（每行一个地址）：</label>
+                        <textarea id="ips" placeholder="ADD示例：&#10;www.visa.cn#优选域名&#10;127.0.0.1:1234#CFnat&#10;[2606:4700::]:2053#IPv6&#10;&#10;注意：&#10;每行一个地址，格式为 地址:端口#备注&#10;IPv6地址需要用中括号括起来，如：[2606:4700::]:2053&#10;端口不写，默认为 443 端口，如：visa.cn#优选域名&#10;&#10;ADDAPI示例：&#10;https://raw.githubusercontent.com/cmliu/WorkerVless2sub/main/addressesapi.txt&#10;&#10;注意：ADDAPI直接添加直链即可"></textarea>
+                        <div class="example">📝 格式说明：
 • 域名&IPv4: www.visa.cn#优选域名 或 127.0.0.1:1234#CFnat
 • IPv6: [2606:4700::]:2053#IPv6地址
 • ADDAPI: https://example.com/api.txt
 • 每行一个地址，端口默认为443
+                        </div>
                     </div>
-                </div>
-                
-                <!-- 优选订阅生成器输入框 -->
-                <div class="form-group" id="subscription-generator-group" style="display: none;">
-                    <label for="subGenerator">优选订阅生成器地址：</label>
-                    <input type="text" id="subGenerator" placeholder="sub.google.com" value="">
-                    <div class="example">🔗 输入优选订阅生成器的域名地址，例如：sub.google.com
+                    
+                    <!-- 优选订阅生成器输入框 -->
+                    <div class="form-group" id="subscription-generator-group" style="display: none;">
+                        <label for="subGenerator">优选订阅生成器地址：</label>
+                        <input type="text" id="subGenerator" placeholder="sub.google.com" value="">
+                        <div class="example">🔗 输入优选订阅生成器的域名地址，例如：sub.google.com
+                        </div>
                     </div>
                 </div>
             </div>

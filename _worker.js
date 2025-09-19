@@ -61,7 +61,7 @@ export default {
             }
             subConfig = url.searchParams.get('subconfig') || subConfig;
 
-            const uuid_json = await getSubData(bphost);
+            const uuid_json = await getLocalData(bphost);
             proxyIP = url.searchParams.get('proxyip') || proxyIP;
             const socks5 = (url.searchParams.has('socks5') && url.searchParams.get('socks5') != '') ? url.searchParams.get('socks5') : null;
             const 全局socks5 = (url.searchParams.has('global')) ? true : false;
@@ -309,7 +309,7 @@ export default {
             }
 
             try {
-                const result = await getSubData(url.searchParams.get('host'));
+                const result = await getLocalData(url.searchParams.get('host'));
                 return new Response(JSON.stringify(result, null, 2), {
                     headers: { 'Content-Type': 'application/json' },
                 });
@@ -404,6 +404,23 @@ async function getSubData(host) {
     }
 
     return result;
+}
+
+async function getLocalData(host) {
+    function generateUUIDv4() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            const r = Math.random() * 16 | 0;
+            const v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+    
+    return [
+        {
+            "uuid": generateUUIDv4(),
+            "host": host
+        }
+    ];
 }
 
 async function 整理成数组(内容) {

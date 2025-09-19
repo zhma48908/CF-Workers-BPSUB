@@ -1550,10 +1550,14 @@ async function subHtml(request, hostLength = hosts.length) {
         <div class="form-container">
             <!-- 代理域名设置 -->
             <div class="section">
-                <div class="section-title">🌐 代理域名设置(必填)</div>
+                <div class="section-title">🌐 代理域名设置(${(hostLength < 1) ? '必填' : '可选'})</div>
                 <div class="form-group">
                     <label for="proxyHost">HOST：</label>
                     <input type="text" id="proxyHost" placeholder="proxy.pages.dev" value="">
+                    <div style="background: rgba(255, 193, 7, 0.1); border-left: 4px solid #ff6161ff; padding: 10px; margin: 8px 0; border-radius: 6px; font-size: 13px;">
+                        <span style="color: #ff4c4cff; font-weight: 600;">🚨 需要注意：</span>
+                        <span style="color: #e2e8f0;">HOST域名直接决定节点的可用性，如果节点无法使用，请自行检查HOST域名是否被GFW屏蔽或阻断</span>
+                    </div>
                     
                     <!-- 部署教程选项卡 -->
                     <div class="tabs-container">
@@ -1646,7 +1650,7 @@ async function subHtml(request, hostLength = hosts.length) {
             
             <!-- 优选IP部分 -->
             <div class="section">
-                <div class="section-title">⚡️ 优选IP设置(必填)</div>
+                <div class="section-title">⚡️ 优选IP设置(可选)</div>
                 
                 <!-- 优选IP模式选择 -->
                 <div class="form-group">

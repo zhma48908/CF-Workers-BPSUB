@@ -1945,6 +1945,10 @@ async function subHtml(request, hostLength = hosts.length) {
         
         // 保存表单数据到localStorage
         function saveFormData() {
+            // 获取当前活跃的选项卡
+            const activeTab = document.querySelector('.tab-button.active');
+            const currentTab = activeTab ? activeTab.id.replace('-tab', '') : 'workers';
+            
             const formData = {
                 ips: document.getElementById('ips').value,
                 subGenerator: document.getElementById('subGenerator').value,
@@ -1957,6 +1961,7 @@ async function subHtml(request, hostLength = hosts.length) {
                 proxyMode: document.querySelector('input[name="proxyMode"]:checked')?.value || 'proxyip',
                 ipMode: document.querySelector('input[name="ipMode"]:checked')?.value || 'custom',
                 globalSocks5: document.getElementById('globalSocks5').checked,
+                activeTab: currentTab, // 保存当前选中的选项卡
                 timestamp: Date.now()
             };
             
@@ -2011,6 +2016,12 @@ async function subHtml(request, hostLength = hosts.length) {
                         proxyModeRadio.checked = true;
                         toggleProxyMode();
                     }
+                }
+                
+                // 恢复选项卡状态
+                if (formData.activeTab) {
+                    console.log('恢复选项卡状态:', formData.activeTab);
+                    switchTab(formData.activeTab);
                 }
                 
                 // 设置全局Socks5选项
@@ -2112,9 +2123,20 @@ async function subHtml(request, hostLength = hosts.length) {
             const subapi = document.getElementById('subapi').value.trim();
             const subconfig = document.getElementById('subconfig').value.trim();
             const hostLength = ${hostLength};
+            
+            // 获取当前选中的选项卡
+            const activeTab = document.querySelector('.tab-button.active');
+            const currentTab = activeTab ? activeTab.id.replace('-tab', '') : 'workers';
+            
             // 检查代理域名是否为空
             if (!proxyHost && hostLength < 1) {
                 alert('⚠️ 代理域名不能为空！\\n\\n请输入代理域名，例如：proxy.pages.dev');
+                return;
+            }
+            
+            // 特别检查：CF Snippets 部署必须要有 HOST
+            if (currentTab === 'snippets' && !proxyHost) {
+                alert('⚠️ 使用 CF Snippets 部署时，HOST 域名不能为空！\\n\\n请输入你的自定义域名，Snippets 规则需要匹配具体的主机名。\\n\\n例如：proxy.yourdomain.com');
                 return;
             }
             
@@ -2371,6 +2393,9 @@ async function subHtml(request, hostLength = hosts.length) {
             // 激活当前选项卡
             document.getElementById(tabName + '-tab').classList.add('active');
             document.getElementById(tabName + '-panel').classList.add('active');
+            
+            // 保存当前选项卡状态到缓存
+            saveFormData();
         }
         
         // 加载Worker代码

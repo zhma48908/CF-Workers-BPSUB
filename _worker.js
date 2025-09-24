@@ -1500,6 +1500,16 @@ async function subHtml(request, hostLength = hosts.length) {
             transform: scale(0.999);
         }
         
+        #snippetCode:hover {
+            border-color: rgba(0, 255, 255, 0.4) !important;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.2) !important;
+        }
+        
+        #snippetCode:active {
+            background: rgba(26, 32, 44, 0.95) !important;
+            transform: scale(0.999);
+        }
+        
         /* 选项卡响应式 */
         @media (max-width: 600px) {
             .tab-button {
@@ -1594,6 +1604,9 @@ async function subHtml(request, hostLength = hosts.length) {
                             <button class="tab-button" onclick="switchTab('pages')" id="pages-tab">
                                 📄 CF Pages 部署
                             </button>
+                            <button class="tab-button" onclick="switchTab('snippets')" id="snippets-tab">
+                                📃 CF Snippets 部署
+                            </button>
                         </div>
                         <div class="tab-content">
                             <!-- Workers 选项卡内容 -->
@@ -1667,6 +1680,86 @@ async function subHtml(request, hostLength = hosts.length) {
                                 <div style="background: rgba(255, 193, 7, 0.1); border-left: 4px solid #ffc107; padding: 12px; margin-top: 10px; border-radius: 6px;">
                                     <span style="color: #ffc107; font-weight: 600;">⚠️ 重要提示：</span>
                                     <span style="color: #e2e8f0;">建议绑定自定义域名（如：proxy.yourdomain.com），并优先使用自定义域名作为代理域名，这样更稳定可靠</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Snippets 选项卡内容 -->
+                            <div class="tab-panel" id="snippets-panel">
+                                <p style="color: #e2e8f0; margin-bottom: 15px; line-height: 1.6;">
+                                    1️⃣ 进入 规则(Rules)>Snippets → 2️⃣ 创建片段 → 3️⃣ 粘贴下方代码并部署 → 4️⃣ 片段规则 主机名>等于>自定义域名
+                                </p>
+                                
+                                <!-- UUID 输入框和按钮 -->
+                                <div style="margin-bottom: 20px;">
+                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
+                                        <input type="text" id="snippetUuid" placeholder="UUID为空，节点将不做连接验证" style="
+                                            flex: 1;
+                                            padding: 12px 15px;
+                                            background: rgba(26, 32, 44, 0.9);
+                                            border: 2px solid rgba(0, 255, 255, 0.2);
+                                            border-radius: 8px;
+                                            color: #e2e8f0;
+                                            font-family: 'JetBrains Mono', monospace;
+                                            font-size: 14px;
+                                            transition: all 0.3s ease;
+                                        " oninput="updateSnippetCode()" onfocus="this.style.borderColor='#00ffff'; this.style.boxShadow='0 0 0 4px rgba(0, 255, 255, 0.2)'" onblur="this.style.borderColor='rgba(0, 255, 255, 0.2)'; this.style.boxShadow='none'">
+                                        <button id="uuidButton" onclick="toggleUuid()" style="
+                                            padding: 12px 20px;
+                                            background: linear-gradient(135deg, rgba(0, 255, 157, 0.2) 0%, rgba(0, 255, 255, 0.2) 100%);
+                                            color: #00ff9d;
+                                            border: 2px solid rgba(0, 255, 157, 0.5);
+                                            border-radius: 8px;
+                                            font-size: 13px;
+                                            font-weight: 600;
+                                            cursor: pointer;
+                                            transition: all 0.3s ease;
+                                            white-space: nowrap;
+                                        " onmouseover="this.style.background='linear-gradient(135deg, rgba(0, 255, 157, 0.3) 0%, rgba(0, 255, 255, 0.3) 100%)'; this.style.borderColor='rgba(0, 255, 157, 0.7)'" 
+                                           onmouseout="updateUuidButtonStyle()">
+                                            生成UUID验证
+                                        </button>
+                                    </div>
+                                    
+                                </div>
+                                
+                                <!-- 代码显示框 -->
+                                <div style="position: relative;">
+                                    <textarea readonly onclick="copySnippetCode()" style="
+                                        width: 100%; 
+                                        height: 238px; 
+                                        background: #1a202c; 
+                                        border: 2px solid rgba(0, 255, 255, 0.2);
+                                        border-radius: 8px; 
+                                        padding: 15px; 
+                                        font-family: 'JetBrains Mono', monospace; 
+                                        font-size: 13px; 
+                                        color: #e2e8f0; 
+                                        resize: vertical;
+                                        line-height: 1.4;
+                                        cursor: pointer;
+                                        transition: all 0.3s ease;
+                                    " id="snippetCode" title="点击复制代码">正在加载代码...</textarea>
+                                    <button onclick="copySnippetCode()" style="
+                                        position: absolute;
+                                        top: 10px;
+                                        right: 10px;
+                                        background: rgba(0, 255, 255, 0.2);
+                                        color: #00ffff;
+                                        border: 1px solid rgba(0, 255, 255, 0.4);
+                                        border-radius: 6px;
+                                        padding: 6px 12px;
+                                        font-size: 12px;
+                                        cursor: pointer;
+                                        transition: all 0.3s ease;
+                                    " onmouseover="this.style.background='rgba(0, 255, 255, 0.3)'" 
+                                       onmouseout="this.style.background='rgba(0, 255, 255, 0.2)'">
+                                        📋 复制代码
+                                    </button>
+                                </div>
+                                
+                                <div style="background: rgba(255, 193, 7, 0.1); border-left: 4px solid #ffc107; padding: 12px; margin-top: 10px; border-radius: 6px;">
+                                    <span style="color: #ffc107; font-weight: 600;">⚠️ 重要提示：</span>
+                                    <span style="color: #e2e8f0;">部署后需要在 Snippet 规则中设置主机名匹配你的自定义域名，填入HOST代理域名</span>
                                 </div>
                             </div>
                         </div>
@@ -1860,6 +1953,7 @@ async function subHtml(request, hostLength = hosts.length) {
                 socks5: document.getElementById('socks5').value,
                 subapi: document.getElementById('subapi').value,
                 subconfig: document.getElementById('subconfig').value,
+                snippetUuid: document.getElementById('snippetUuid') ? document.getElementById('snippetUuid').value : '',
                 proxyMode: document.querySelector('input[name="proxyMode"]:checked')?.value || 'proxyip',
                 ipMode: document.querySelector('input[name="ipMode"]:checked')?.value || 'custom',
                 globalSocks5: document.getElementById('globalSocks5').checked,
@@ -1894,6 +1988,12 @@ async function subHtml(request, hostLength = hosts.length) {
                 if (formData.socks5) document.getElementById('socks5').value = formData.socks5;
                 if (formData.subapi) document.getElementById('subapi').value = formData.subapi;
                 if (formData.subconfig) document.getElementById('subconfig').value = formData.subconfig;
+                if (formData.snippetUuid && document.getElementById('snippetUuid')) {
+                    document.getElementById('snippetUuid').value = formData.snippetUuid;
+                    // 更新按钮状态和代码
+                    updateUuidButtonStyle();
+                    updateSnippetCode();
+                }
                 
                 // 设置IP模式
                 if (formData.ipMode) {
@@ -1930,7 +2030,7 @@ async function subHtml(request, hostLength = hosts.length) {
         
         // 设置表单字段的自动保存事件监听器
         function setupAutoSave() {
-            const fields = ['ips', 'subGenerator', 'proxyHost', 'proxyip', 'socks5', 'subapi', 'subconfig'];
+            const fields = ['ips', 'subGenerator', 'proxyHost', 'proxyip', 'socks5', 'subapi', 'subconfig', 'snippetUuid'];
             
             // 为文本输入字段添加事件监听
             fields.forEach(fieldId => {
@@ -2091,6 +2191,15 @@ async function subHtml(request, hostLength = hosts.length) {
             // 处理订阅转换配置
             if (subconfig) {
                 params.append('subconfig', subconfig);
+            }
+            
+            // 检查是否选择了 Snippets 部署且有 UUID
+            const activeTab = document.querySelector('.tab-button.active');
+            if (activeTab && activeTab.id === 'snippets-tab') {
+                const snippetUuid = document.getElementById('snippetUuid').value.trim();
+                if (snippetUuid) {
+                    params.append('uuid', snippetUuid);
+                }
             }
             
             // 组合最终URL
@@ -2318,6 +2427,143 @@ async function subHtml(request, hostLength = hosts.length) {
             
             // 显示下载提示
             showDownloadSuccess();
+        }
+
+        // UUID 生成函数
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        // UUID 按钮切换函数
+        function toggleUuid() {
+            const uuidInput = document.getElementById('snippetUuid');
+            const uuidButton = document.getElementById('uuidButton');
+            
+            if (uuidInput.value.trim() === '') {
+                // 生成随机 UUID
+                uuidInput.value = generateUUID();
+                updateUuidButtonStyle();
+                updateSnippetCode();
+            } else {
+                // 清除 UUID
+                uuidInput.value = '';
+                updateUuidButtonStyle();
+                updateSnippetCode();
+            }
+        }
+
+        // 更新 UUID 按钮样式和文本
+        function updateUuidButtonStyle() {
+            const uuidInput = document.getElementById('snippetUuid');
+            const uuidButton = document.getElementById('uuidButton');
+            
+            if (uuidInput.value.trim() === '') {
+                uuidButton.textContent = '生成UUID验证';
+                uuidButton.style.background = 'linear-gradient(135deg, rgba(0, 255, 157, 0.2) 0%, rgba(0, 255, 255, 0.2) 100%)';
+                uuidButton.style.borderColor = 'rgba(0, 255, 157, 0.5)';
+                uuidButton.style.color = '#00ff9d';
+            } else {
+                uuidButton.textContent = '取消UUID验证';
+                uuidButton.style.background = 'linear-gradient(135deg, rgba(255, 99, 71, 0.2) 0%, rgba(255, 165, 0, 0.2) 100%)';
+                uuidButton.style.borderColor = 'rgba(255, 99, 71, 0.5)';
+                uuidButton.style.color = '#ff6347';
+            }
+        }
+
+        let snippetCodeCache = '';
+
+        // 加载 Snippet 代码
+        async function loadSnippetCode() {
+            try {
+                const response = await fetch('https://raw.githubusercontent.com/cmliu/CF-Workers-BPSUB/main/snippet/v.js');
+                if (!response.ok) {
+                    throw new Error('获取代码失败');
+                }
+                const code = await response.text();
+                snippetCodeCache = code;
+                updateSnippetCode();
+            } catch (error) {
+                console.error('加载Snippet代码失败:', error);
+                document.getElementById('snippetCode').value = '加载代码失败，请自行从\\nhttps://raw.githubusercontent.com/cmliu/CF-Workers-BPSUB/main/snippet/v.js\\n获取最新代码';
+            }
+        }
+
+        // 更新 Snippet 代码
+        function updateSnippetCode() {
+            const uuidInput = document.getElementById('snippetUuid');
+            const snippetCodeElement = document.getElementById('snippetCode');
+            
+            if (snippetCodeCache) {
+                const uuid = uuidInput.value.trim();
+                let updatedCode = snippetCodeCache;
+                
+                // 替换第一行的 FIXED_UUID 值
+                const firstLine = "const FIXED_UUID = '';";
+                const newFirstLine = \`const FIXED_UUID = '\${uuid}';\`;
+                updatedCode = updatedCode.replace(firstLine, newFirstLine);
+                
+                snippetCodeElement.value = updatedCode;
+            }
+        }
+
+        // 复制 Snippet 代码
+        function copySnippetCode() {
+            const snippetCodeElement = document.getElementById('snippetCode');
+            const code = snippetCodeElement.value;
+            
+            // 添加点击视觉反馈
+            snippetCodeElement.style.background = 'rgba(0, 255, 255, 0.1)';
+            snippetCodeElement.style.borderColor = 'rgba(0, 255, 255, 0.6)';
+            
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(code).then(() => {
+                    showCopySuccessForSnippetCodeBox();
+                }).catch(err => {
+                    fallbackCopyTextToClipboard(code, snippetCodeElement);
+                    showCopySuccessForSnippetCodeBox();
+                });
+            } else {
+                fallbackCopyTextToClipboard(code, snippetCodeElement);
+                showCopySuccessForSnippetCodeBox();
+            }
+        }
+
+        // 显示复制成功（针对 Snippet 代码框）
+        function showCopySuccessForSnippetCodeBox() {
+            const snippetCodeElement = document.getElementById('snippetCode');
+            const button = snippetCodeElement.nextElementSibling;
+            
+            // 更新代码框样式
+            snippetCodeElement.style.background = 'rgba(0, 255, 157, 0.15)';
+            snippetCodeElement.style.borderColor = '#00ff9d';
+            snippetCodeElement.style.boxShadow = '0 0 15px rgba(0, 255, 157, 0.3)';
+            
+            // 更新按钮
+            if (button) {
+                const originalText = button.textContent;
+                button.textContent = '✅ 已复制!';
+                button.style.background = 'rgba(0, 255, 157, 0.3)';
+                button.style.borderColor = '#00ff9d';
+                button.style.color = '#00ff9d';
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.background = 'rgba(0, 255, 255, 0.2)';
+                    button.style.borderColor = 'rgba(0, 255, 255, 0.4)';
+                    button.style.color = '#00ffff';
+                }, 2000);
+            }
+            
+            // 恢复代码框样式
+            setTimeout(() => {
+                snippetCodeElement.style.background = '#1a202c';
+                snippetCodeElement.style.borderColor = 'rgba(0, 255, 255, 0.2)';
+                snippetCodeElement.style.boxShadow = 'none';
+            }, 2000);
         }
         
         // 显示复制成功（针对按钮）
@@ -2601,6 +2847,12 @@ async function subHtml(request, hostLength = hosts.length) {
             
             // 加载Worker代码
             loadWorkerCode();
+            
+            // 加载Snippet代码
+            loadSnippetCode();
+            
+            // 初始化 UUID 按钮样式
+            updateUuidButtonStyle();
             
             // 首先加载缓存的表单数据
             loadFormData();

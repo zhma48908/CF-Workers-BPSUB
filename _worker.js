@@ -1649,7 +1649,7 @@ async function subHtml(request, hostLength = hosts.length) {
                                 </div>
                                 <div style="background: rgba(255, 193, 7, 0.1); border-left: 4px solid #ffc107; padding: 12px; margin-top: 10px; border-radius: 6px;">
                                     <span style="color: #ffc107; font-weight: 600;">⚠️ 重要提示：</span>
-                                    <span style="color: #e2e8f0;">必须绑定自定义域名（如：proxy.yourdomain.com），并优先使用自定义域名作为代理域名，这样更稳定可靠</span>
+                                    <span style="color: #e2e8f0;">必须绑定自定义域名（如：proxy.yourdomain.com），并优先使用自定义域名作为HOST代理域名，这样更稳定可靠</span>
                                 </div>
                             </div>
                             
@@ -1679,7 +1679,7 @@ async function subHtml(request, hostLength = hosts.length) {
                                 </div>
                                 <div style="background: rgba(255, 193, 7, 0.1); border-left: 4px solid #ffc107; padding: 12px; margin-top: 10px; border-radius: 6px;">
                                     <span style="color: #ffc107; font-weight: 600;">⚠️ 重要提示：</span>
-                                    <span style="color: #e2e8f0;">建议绑定自定义域名（如：proxy.yourdomain.com），并优先使用自定义域名作为代理域名，这样更稳定可靠</span>
+                                    <span style="color: #e2e8f0;">建议绑定自定义域名（如：proxy.yourdomain.com），并优先使用自定义域名作为HOST代理域名，这样更稳定可靠</span>
                                 </div>
                             </div>
                             
@@ -1759,7 +1759,7 @@ async function subHtml(request, hostLength = hosts.length) {
                                 
                                 <div style="background: rgba(255, 193, 7, 0.1); border-left: 4px solid #ffc107; padding: 12px; margin-top: 10px; border-radius: 6px;">
                                     <span style="color: #ffc107; font-weight: 600;">⚠️ 重要提示：</span>
-                                    <span style="color: #e2e8f0;">部署后需要在 Snippet 规则中设置主机名匹配你的自定义域名，填入HOST代理域名</span>
+                                    <span style="color: #e2e8f0;">部署后需要在 Snippet 规则中设置主机名匹配你的自定义域名，并填入HOST代理域名</span>
                                 </div>
                             </div>
                         </div>

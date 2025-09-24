@@ -2216,7 +2216,6 @@ async function subHtml(request, hostLength = hosts.length) {
             }
             
             // 检查是否选择了 Snippets 部署且有 UUID
-            const activeTab = document.querySelector('.tab-button.active');
             if (activeTab && activeTab.id === 'snippets-tab') {
                 const snippetUuid = document.getElementById('snippetUuid').value.trim();
                 if (snippetUuid) {

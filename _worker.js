@@ -1686,7 +1686,7 @@ async function subHtml(request, hostLength = hosts.length) {
                             <!-- Snippets 选项卡内容 -->
                             <div class="tab-panel" id="snippets-panel">
                                 <p style="color: #e2e8f0; margin-bottom: 15px; line-height: 1.6;">
-                                    1️⃣ 进入 规则(Rules)>Snippets → 2️⃣ 创建片段 → 3️⃣ 粘贴下方代码并部署 → 4️⃣ 片段规则 主机名>等于>自定义域名
+                                    1️⃣ 进入 规则(Rules) > Snippets → 2️⃣ 创建片段 → 3️⃣ 粘贴下方代码并部署 <br>→ 4️⃣ 片段规则 主机名 > 等于 > 自定义域名 <br>→ 5️⃣ 创建新代理DNS记录 > CNAME > 自定义域 > <strong><span onclick="copyToClipboard('cf.090227.xyz')" style="cursor: pointer; color: #00ff9d; text-decoration: underline;">cf.090227.xyz</span></strong>
                                 </p>
                                 
                                 <!-- UUID 输入框和按钮 -->
@@ -2300,21 +2300,35 @@ async function subHtml(request, hostLength = hosts.length) {
             });
         }
         
-        function copyToClipboard(elementId = 'subscriptionLink') {
-            const resultUrl = document.getElementById(elementId);
-            const url = resultUrl.textContent;
+        function copyToClipboard(elementIdOrText = 'subscriptionLink') {
+            let url, element;
+            
+            // 判断参数是元素ID还是直接的文本
+            if (document.getElementById(elementIdOrText)) {
+                // 如果是元素ID
+                element = document.getElementById(elementIdOrText);
+                url = element.textContent;
+            } else {
+                // 如果是直接的文本
+                url = elementIdOrText;
+                element = null;
+            }
             
             // 使用 Clipboard API
             if (navigator.clipboard && window.isSecureContext) {
                 navigator.clipboard.writeText(url).then(() => {
-                    showCopySuccess(resultUrl);
+                    if (element) {
+                        showCopySuccess(element);
+                    } else {
+                        showToast('✅ 复制成功！' + url + ' 已复制到剪贴板');
+                    }
                 }).catch(err => {
                     // 降级到传统方法
-                    fallbackCopyTextToClipboard(url, resultUrl);
+                    fallbackCopyTextToClipboard(url, element);
                 });
             } else {
                 // 降级到传统方法
-                fallbackCopyTextToClipboard(url, resultUrl);
+                fallbackCopyTextToClipboard(url, element);
             }
         }
         
@@ -2333,7 +2347,11 @@ async function subHtml(request, hostLength = hosts.length) {
             
             try {
                 document.execCommand('copy');
-                showCopySuccess(element);
+                if (element) {
+                    showCopySuccess(element);
+                } else {
+                    showToast('✅ 复制成功！' + text + ' 已复制到剪贴板');
+                }
             } catch (err) {
                 alert('复制失败，请手动复制链接');
             }
@@ -2352,6 +2370,26 @@ async function subHtml(request, hostLength = hosts.length) {
                 element.className = originalClass;
                 element.textContent = originalText;
             }, 2000);
+        }
+        
+        function showToast(message) {
+            // 创建toast元素
+            const toast = document.createElement('div');
+            toast.textContent = message;
+            toast.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(0, 255, 157, 0.9); color: #1a202c; padding: 12px 20px; border-radius: 8px; font-weight: 600; z-index: 10000; box-shadow: 0 4px 12px rgba(0, 255, 157, 0.3); transition: all 0.3s ease;';
+            
+            document.body.appendChild(toast);
+            
+            // 3秒后自动移除
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (document.body.contains(toast)) {
+                        document.body.removeChild(toast);
+                    }
+                }, 300);
+            }, 3000);
         }
         
         // 生成二维码

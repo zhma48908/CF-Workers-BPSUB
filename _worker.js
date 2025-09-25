@@ -64,15 +64,15 @@ export default {
             const uuid_json = await getLocalData(bphost, uuid);
             proxyIP = url.searchParams.get('proxyip') || proxyIP;
 
-            let 最终路径 = `/snippets/ip=${proxyIP}?ed=2560`;
+            let 最终路径 = `/snippets/ip=${proxyIP}`;
             let socks5 = null;
             const 全局socks5 = (url.searchParams.has('global')) ? true : false;
             if (url.searchParams.has('socks5') && url.searchParams.get('socks5') != '') {
                 socks5 = url.searchParams.get('socks5');
-                最终路径 = 全局socks5 ? `/snippets/gs5=${socks5}?ed=2560` : `/snippets/s5=${socks5}?ed=2560`;
+                最终路径 = 全局socks5 ? `/snippets/gs5=${socks5}` : `/snippets/s5=${socks5}`;
             } else if (url.searchParams.has('http') && url.searchParams.get('http') == '') {
                 socks5 = url.searchParams.get('http');
-                最终路径 = 全局socks5 ? `/http=${socks5}?globalproxy&ed=2560` : `/http=${socks5}?ed=2560`;
+                最终路径 = 全局socks5 ? `/http=${socks5}?globalproxy` : `/http=${socks5}`;
             }
             
             const responseHeaders = {
@@ -387,7 +387,7 @@ async function getSubData(host) {
             const queryString = rest.substring(queryStart + 1).split('#')[0];
             const params = new URLSearchParams(queryString);
             const host = params.get('host');
-            //const path = `/snippets/ip=${encodeURIComponent(proxyIP)}?ed=2560`;
+            //const path = `/snippets/ip=${encodeURIComponent(proxyIP)}`;
             if (!host) return null;
             return { uuid, host };
         } catch (error) {

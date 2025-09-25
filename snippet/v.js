@@ -94,14 +94,14 @@ async function handleSPESSWebSocket(request, config) {
 
     serverWS.accept();
 
-    // WebSocket心跳机制，每10秒发送一次ping
+    // WebSocket心跳机制，每30秒发送一次ping
     let heartbeatInterval = setInterval(() => {
         if (serverWS.readyState === WS_READY_STATE_OPEN) {
             try {
                 serverWS.send('ping');
             } catch (e) { }
         }
-    }, 10000);
+    }, 30000);
     function clearHeartbeat() {
         if (heartbeatInterval) {
             clearInterval(heartbeatInterval);

@@ -72,7 +72,7 @@ export default {
                 最终路径 = 全局socks5 ? `/snippets/gs5=${socks5}` : `/snippets/s5=${socks5}`;
             } else if (url.searchParams.has('http') && url.searchParams.get('http') == '') {
                 socks5 = url.searchParams.get('http');
-                最终路径 = 全局socks5 ? `/http=${socks5}?globalproxy` : `/http=${socks5}`;
+                最终路径 = 全局socks5 ? `/http://${socks5}` : `/http=${socks5}`;
             }
             
             const responseHeaders = {

@@ -2540,8 +2540,9 @@ async function subHtml(request, hostLength = hosts.length) {
 
         // 加载 Snippet 代码
         async function loadSnippetCode() {
+            const snippetJsUrl = 'https://raw.githubusercontent.com/cmliu/CF-Workers-BPSUB/main/snippet/t13.js';
             try {
-                const response = await fetch('https://raw.githubusercontent.com/cmliu/CF-Workers-BPSUB/main/snippet/v.js');
+                const response = await fetch(snippetJsUrl);
                 if (!response.ok) {
                     throw new Error('获取代码失败');
                 }
@@ -2550,7 +2551,7 @@ async function subHtml(request, hostLength = hosts.length) {
                 updateSnippetCode();
             } catch (error) {
                 console.error('加载Snippet代码失败:', error);
-                document.getElementById('snippetCode').value = '加载代码失败，请自行从\\nhttps://raw.githubusercontent.com/cmliu/CF-Workers-BPSUB/main/snippet/v.js\\n获取最新代码';
+                document.getElementById('snippetCode').value = \`加载代码失败，请自行从\\n\${snippetJsUrl}\\n获取最新代码\`;
             }
         }
 

@@ -10,66 +10,89 @@ let 我的SOCKS5账号 = '';//格式'账号:密码@地址:端口'，示例admin:
 //////////////////////////////////////////////////////////////////////////流控配置////////////////////////////////////////////////////////////////////////
 let 启动控流机制 = false //true启动，false关闭，使用控流可降低CPU超时的概率，提升连接稳定性，适合轻度使用，日常使用应该绰绰有余
 let 传输控流大小 = 64; //单位字节，相当于分片大小
+//////////////////////////////////////////////////////////////////////////XHTTP////////////////////////////////////////////////////////////////////////
+const 缓冲区大小 = 128 * 1024 // 下载/上传缓冲区大小（字节）
 //////////////////////////////////////////////////////////////////////////主要架构////////////////////////////////////////////////////////////////////////
 export default {
     async fetch(访问请求) {
+        const url = new URL(访问请求.url);
+        我的SOCKS5账号 = url.searchParams.get('socks5') || url.searchParams.get('http');
+        启用SOCKS5全局反代 = url.searchParams.has('globalproxy');
+        if (url.pathname.toLowerCase().includes('/socks5=')) {
+            我的SOCKS5账号 = url.pathname.split('/socks5=')[1];
+            启用SOCKS5反代 = 'socks5';
+        } else if (url.pathname.toLowerCase().includes('/http=')) {
+            我的SOCKS5账号 = url.pathname.split('/http=')[1];
+            启用SOCKS5反代 = 'http';
+        } else if (url.pathname.toLowerCase().includes('/socks://') || url.pathname.toLowerCase().includes('/socks5://') || url.pathname.toLowerCase().includes('/http://')) {
+            启用SOCKS5反代 = (url.pathname.includes('/http://')) ? 'http' : 'socks5';
+            我的SOCKS5账号 = url.pathname.split('://')[1].split('#')[0];
+            if (我的SOCKS5账号.includes('@')) {
+                const lastAtIndex = 我的SOCKS5账号.lastIndexOf('@');
+                let userPassword = 我的SOCKS5账号.substring(0, lastAtIndex).replaceAll('%3D', '=');
+                const base64Regex = /^(?:[A-Z0-9+/]{4})*(?:[A-Z0-9+/]{2}==|[A-Z0-9+/]{3}=)?$/i;
+                if (base64Regex.test(userPassword) && !userPassword.includes(':')) userPassword = atob(userPassword);
+                我的SOCKS5账号 = `${userPassword}@${我的SOCKS5账号.substring(lastAtIndex + 1)}`;
+            }
+            启用SOCKS5全局反代 = true;//开启全局SOCKS5
+        }
+
+        if (我的SOCKS5账号 && 获取SOCKS5账号(我的SOCKS5账号)) {
+            try {
+                我的SOCKS5账号 = 我的SOCKS5账号;
+                启用SOCKS5反代 = url.searchParams.get('http') ? 'http' : 启用SOCKS5反代;
+            } catch (err) {
+                启用SOCKS5反代 = null;
+            }
+        } else {
+            启用SOCKS5反代 = null;
+        }
+
+        if (url.searchParams.has('proxyip')) {
+            反代IP = url.searchParams.get('proxyip');
+            启用SOCKS5反代 = null;
+        } else if (url.pathname.toLowerCase().includes('/proxyip=')) {
+            反代IP = url.pathname.toLowerCase().split('/proxyip=')[1];
+            启用SOCKS5反代 = null;
+        } else if (url.pathname.toLowerCase().includes('/proxyip.')) {
+            反代IP = `proxyip.${url.pathname.toLowerCase().split("/proxyip.")[1]}`;
+            启用SOCKS5反代 = null;
+        } else if (url.pathname.toLowerCase().includes('/pyip=')) {
+            反代IP = url.pathname.toLowerCase().split('/pyip=')[1];
+            启用SOCKS5反代 = null;
+        } else if (url.pathname.toLowerCase().includes('/ip=')) {
+            反代IP = url.pathname.toLowerCase().split('/ip=')[1];
+            启用SOCKS5反代 = null;
+        }
+
         if (访问请求.headers.get('Upgrade') === 'websocket') {
-            const url = new URL(访问请求.url);
-            我的SOCKS5账号 = url.searchParams.get('socks5') || url.searchParams.get('http');
-            启用SOCKS5全局反代 = url.searchParams.has('globalproxy');
-            if (url.pathname.toLowerCase().includes('/socks5=')) {
-                我的SOCKS5账号 = url.pathname.split('/socks5=')[1];
-                启用SOCKS5反代 = 'socks5';
-            } else if (url.pathname.toLowerCase().includes('/http=')) {
-                我的SOCKS5账号 = url.pathname.split('/http=')[1];
-                启用SOCKS5反代 = 'http';
-            } else if (url.pathname.toLowerCase().includes('/socks://') || url.pathname.toLowerCase().includes('/socks5://') || url.pathname.toLowerCase().includes('/http://')) {
-                启用SOCKS5反代 = (url.pathname.includes('/http://')) ? 'http' : 'socks5';
-                我的SOCKS5账号 = url.pathname.split('://')[1].split('#')[0];
-                if (我的SOCKS5账号.includes('@')) {
-                    const lastAtIndex = 我的SOCKS5账号.lastIndexOf('@');
-                    let userPassword = 我的SOCKS5账号.substring(0, lastAtIndex).replaceAll('%3D', '=');
-                    const base64Regex = /^(?:[A-Z0-9+/]{4})*(?:[A-Z0-9+/]{2}==|[A-Z0-9+/]{3}=)?$/i;
-                    if (base64Regex.test(userPassword) && !userPassword.includes(':')) userPassword = atob(userPassword);
-                    我的SOCKS5账号 = `${userPassword}@${我的SOCKS5账号.substring(lastAtIndex + 1)}`;
-                }
-                启用SOCKS5全局反代 = true;//开启全局SOCKS5
-            }
-
-            if (我的SOCKS5账号 && 获取SOCKS5账号(我的SOCKS5账号)) {
-                try {
-                    我的SOCKS5账号 = 我的SOCKS5账号;
-                    启用SOCKS5反代 = url.searchParams.get('http') ? 'http' : 启用SOCKS5反代;
-                } catch (err) {
-                    启用SOCKS5反代 = null;
-                }
-            } else {
-                启用SOCKS5反代 = null;
-            }
-
-            if (url.searchParams.has('proxyip')) {
-                反代IP = url.searchParams.get('proxyip');
-                启用SOCKS5反代 = null;
-            } else if (url.pathname.toLowerCase().includes('/proxyip=')) {
-                反代IP = url.pathname.toLowerCase().split('/proxyip=')[1];
-                启用SOCKS5反代 = null;
-            } else if (url.pathname.toLowerCase().includes('/proxyip.')) {
-                反代IP = `proxyip.${url.pathname.toLowerCase().split("/proxyip.")[1]}`;
-                启用SOCKS5反代 = null;
-            } else if (url.pathname.toLowerCase().includes('/pyip=')) {
-                反代IP = url.pathname.toLowerCase().split('/pyip=')[1];
-                启用SOCKS5反代 = null;
-            } else if (url.pathname.toLowerCase().includes('/ip=')) {
-                反代IP = url.pathname.toLowerCase().split('/ip=')[1];
-                启用SOCKS5反代 = null;
-            }
-
             const [客户端, WS接口] = Object.values(new WebSocketPair());
             WS接口.accept();
             WS接口.send(new Uint8Array([0, 0]));
             启动传输管道(WS接口);
             return new Response(null, { status: 101, webSocket: 客户端 }); //一切准备就绪后，回复客户端WS连接升级成功
         } else {
+            if (访问请求.method === 'POST') {
+                const readable = await 处理POST(访问请求)
+                if (readable) {
+                    return new Response(readable, {
+                        headers: {
+                            'X-Accel-Buffering': 'no',
+                            'Cache-Control': 'no-store',
+                            Connection: 'Keep-Alive',
+                            'User-Agent': 'Go-http-client/2.0',
+                            'Content-Type': 'application/grpc',
+                            // 'Content-Type': 'text/event-stream',
+                            // 'Transfer-Encoding': 'chunked',
+                        },
+                    })
+                }
+
+                return new Response(null, {
+                    status: 404,
+                    statusText: '错误请求',
+                })
+            }
             return new Response('Hello World!', { status: 200 });
         }
     }
@@ -431,4 +454,294 @@ async function httpConnect(addressRemote, portRemote) {
     }
 
     return sock;
+}
+
+function 验证UUID(id, uuid) {
+    for (let index = 0; index < 16; index++) {
+        const v = id[index]
+        const u = uuid[index]
+        if (v !== u) {
+            return false
+        }
+    }
+    return true
+}
+
+class 计数器 {
+    #总数
+
+    constructor() {
+        this.#总数 = 0
+    }
+
+    获取() {
+        return this.#总数
+    }
+
+    增加(size) {
+        this.#总数 += size
+    }
+}
+
+function 合并类型数组(first, ...args) {
+    let len = first.length
+    for (let a of args) {
+        len += a.length
+    }
+    const r = new first.constructor(len)
+    r.set(first, 0)
+    len = first.length
+    for (let a of args) {
+        r.set(a, len)
+        len += a.length
+    }
+    return r
+}
+
+function 解析UUID(uuid) {
+    uuid = uuid.replaceAll('-', '')
+    const r = []
+    for (let index = 0; index < 16; index++) {
+        const v = parseInt(uuid.substr(index * 2, 2), 16)
+        r.push(v)
+    }
+    return r
+}
+
+function 获取缓冲区(size) {
+    return new Uint8Array(new ArrayBuffer(size || 4 * 1024))
+}
+
+// 枚举
+const 地址类型_IPV4 = 1
+const 地址类型_URL = 2
+const 地址类型_IPV6 = 3
+
+async function 读取VLESS头部(reader, uuid_str) {
+    let r = await reader.readAtLeast(1 + 16 + 1, 获取缓冲区())
+    let rlen = 0
+    let idx = 0
+    let cache = r.value
+    rlen += r.value.length
+
+    const version = cache[0]
+    const id = cache.slice(1, 1 + 16)
+    const uuid = 解析UUID(uuid_str)
+    if (FIXED_UUID && !验证UUID(id, uuid)) {
+        return `无效的UUID`
+    }
+    const pb_len = cache[1 + 16]
+    const addr_plus1 = 1 + 16 + 1 + pb_len + 1 + 2 + 1
+
+    if (addr_plus1 + 1 > rlen) {
+        if (r.done) {
+            return `头部太短`
+        }
+        idx = addr_plus1 + 1 - rlen
+        r = await reader.readAtLeast(idx, 获取缓冲区())
+        rlen += r.value.length
+        cache = 合并类型数组(cache, r.value)
+    }
+
+    const cmd = cache[1 + 16 + 1 + pb_len]
+    if (cmd !== 1) {
+        return `不支持的命令: ${cmd}`
+    }
+    const port = (cache[addr_plus1 - 1 - 2] << 8) + cache[addr_plus1 - 1 - 1]
+    const atype = cache[addr_plus1 - 1]
+    let header_len = -1
+    if (atype === 地址类型_IPV4) {
+        header_len = addr_plus1 + 4
+    } else if (atype === 地址类型_IPV6) {
+        header_len = addr_plus1 + 16
+    } else if (atype === 地址类型_URL) {
+        header_len = addr_plus1 + 1 + cache[addr_plus1]
+    }
+
+    if (header_len < 0) {
+        return '读取地址类型失败'
+    }
+
+    idx = header_len - rlen
+    if (idx > 0) {
+        if (r.done) {
+            return `读取地址失败`
+        }
+        r = await reader.readAtLeast(idx, 获取缓冲区())
+        rlen += r.value.length
+        cache = 合并类型数组(cache, r.value)
+    }
+
+    let 主机名 = ''
+    idx = addr_plus1
+    switch (atype) {
+        case 地址类型_IPV4:
+            主机名 = cache.slice(idx, idx + 4).join('.')
+            break
+        case 地址类型_URL:
+            主机名 = new TextDecoder().decode(
+                cache.slice(idx + 1, idx + 1 + cache[idx]),
+            )
+            break
+        case 地址类型_IPV6:
+            主机名 = cache
+                .slice(idx, idx + 16)
+                .reduce(
+                    (s, b2, i2, a) =>
+                        i2 % 2
+                            ? s.concat(((a[i2 - 1] << 8) + b2).toString(16))
+                            : s,
+                    [],
+                )
+                .join(':')
+            break
+    }
+
+    if (主机名.length < 1) {
+        return '解析主机名失败'
+    }
+
+    return {
+        主机名,
+        port,
+        data: cache.slice(header_len),
+        resp: new Uint8Array([version, 0]),
+        reader,
+        done: r.done,
+    }
+}
+
+async function 上传到远程(counter, writer, vless) {
+    async function 内部上传(d) {
+        counter.增加(d.length)
+        await writer.write(d)
+    }
+
+    let buff = 获取缓冲区(缓冲区大小)
+    await 内部上传(vless.data)
+    const more = !vless.done
+    while (more) {
+        const r = await vless.reader.read(buff)
+        if (r.done) {
+            break
+        }
+        await 内部上传(r.value)
+        buff = new Uint8Array(r.value.buffer)
+    }
+}
+
+function 创建上传器(vless, writable) {
+    const counter = new 计数器()
+    const done = new Promise((resolve, reject) => {
+        const writer = writable.getWriter()
+        上传到远程(counter, writer, vless)
+            .then(resolve)
+            .catch(reject)
+            .finally(() => writer.close())
+    })
+
+    return {
+        counter,
+        done,
+    }
+}
+
+function 创建下载器(vless, remote_readable) {
+    const counter = new 计数器()
+    const buffer_stream = new TransformStream(
+        {
+            start(controller) {
+                counter.增加(vless.resp.length)
+                controller.enqueue(vless.resp)
+            },
+            transform(chunk, controller) {
+                counter.增加(chunk.length)
+                controller.enqueue(chunk)
+            },
+            cancel(reason) {
+                // 流被取消
+            },
+        },
+        null,
+        new ByteLengthQueuingStrategy({ highWaterMark: 缓冲区大小 }),
+    )
+
+    const done = remote_readable
+        .pipeTo(buffer_stream.writable)
+        .catch(() => {})
+
+    return {
+        readable: buffer_stream.readable,
+        counter,
+        done,
+    }
+}
+
+async function 连接到远程(vless, ...remotes) {
+    const 主机名 = remotes.shift()
+    if (!主机名 || 主机名.length < 1) {
+        return null
+    }
+
+    const retry = () => 连接到远程(vless, ...remotes)
+    try {
+        const remote = connect({ hostname: 主机名, port: vless.port })
+        const info = await remote.opened
+        return remote
+    } catch (err) {
+        // 连接失败，重试下一个
+    }
+    return await retry()
+}
+
+async function 处理客户端(readable) {
+    const reader = readable.getReader({ mode: 'byob' })
+    const vless = await 读取VLESS头部(reader, FIXED_UUID)
+    if (typeof vless !== 'object' || !vless) {
+        await 清空连接(reader)
+        return null
+    }
+
+    const remote = await 连接到远程(
+        vless,
+        vless.主机名,
+        反代IP,
+    )
+    if (remote === null) {
+        return null
+    }
+
+    const uploader = 创建上传器(vless, remote.writable)
+    const downloader = 创建下载器(vless, remote.readable)
+
+    downloader.done
+        .catch(() => { })
+        .finally(() => uploader.done)
+        .catch(() => { })
+
+    return downloader.readable
+}
+
+async function 处理POST(request) {
+    try {
+        return await 处理客户端(request.body)
+    } catch (err) {
+        // 处理客户端错误，静默处理
+    }
+    return null
+}
+
+async function 清空连接(byob_reader) {
+    try {
+        let buff = 获取缓冲区()
+        while (true) {
+            const r = await byob_reader.read(buff)
+            if (r.done) {
+                break
+            }
+            buff = new Uint8Array(r.value.buffer)
+        }
+    } catch (err) {
+        // 清空错误，静默处理
+    }
 }

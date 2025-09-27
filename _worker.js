@@ -2415,6 +2415,8 @@ async function subHtml(request, hostLength = hosts.length) {
             const qrContainer = document.getElementById('qr-container');
             const shortUrlBtn = document.getElementById('generateShortUrl');
             
+            // 存储原始URL到全局变量
+            cpurl = url;
             resultUrl.textContent = url;
             resultSection.style.display = 'block';
             
@@ -2442,7 +2444,8 @@ async function subHtml(request, hostLength = hosts.length) {
                 shortUrlBtn.style.transform = '';
             }, 200);
             
-            const subscriptionLink = document.getElementById('subscriptionLink').textContent;
+            // 使用存储的cpurl而不是页面文本
+            const subscriptionLink = cpurl;
             const subscriptionLinkElement = document.getElementById('subscriptionLink');
             
             // 显示加载状态
@@ -2463,6 +2466,8 @@ async function subHtml(request, hostLength = hosts.length) {
             .then(data => {
                 console.log("短链接响应:", data);
                 if (data.Code === 1 && data.ShortUrl) {
+                    // 更新cpurl为短链接
+                    cpurl = data.ShortUrl;
                     subscriptionLinkElement.textContent = data.ShortUrl;
                     // 使用原有样式更新二维码
                     generateQRCode(data.ShortUrl);
@@ -2487,7 +2492,12 @@ async function subHtml(request, hostLength = hosts.length) {
             if (document.getElementById(elementIdOrText)) {
                 // 如果是元素ID
                 element = document.getElementById(elementIdOrText);
-                url = element.textContent;
+                // 如果是订阅链接，使用存储的cpurl而不是页面文本
+                if (elementIdOrText === 'subscriptionLink' && cpurl) {
+                    url = cpurl;
+                } else {
+                    url = element.textContent;
+                }
             } else {
                 // 如果是直接的文本
                 url = elementIdOrText;
@@ -2548,7 +2558,12 @@ async function subHtml(request, hostLength = hosts.length) {
             
             setTimeout(() => {
                 element.className = originalClass;
-                element.textContent = originalText;
+                // 如果是订阅链接元素，恢复时使用最新的cpurl，否则使用原始文本
+                if (element.id === 'subscriptionLink' && cpurl) {
+                    element.textContent = cpurl;
+                } else {
+                    element.textContent = originalText;
+                }
             }, 2000);
         }
         
@@ -2750,6 +2765,9 @@ async function subHtml(request, hostLength = hosts.length) {
         
         // GitHub代理配置
         const GITHUB_PROXY = 'http://github.cmliussss.net/';
+        
+        // 存储当前订阅URL
+        let cpurl = '';
 
         // 源码URL映射
         const snippetUrlMap = {

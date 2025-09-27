@@ -2764,7 +2764,7 @@ async function subHtml(request, hostLength = hosts.length) {
         let snippetCodeCache = '';
         
         // GitHub代理配置
-        const GITHUB_PROXY = 'http://github.cmliussss.net/';
+        const GITHUB_PROXY = 'https://github.cmliussss.net/';
         
         // 存储当前订阅URL
         let cpurl = '';

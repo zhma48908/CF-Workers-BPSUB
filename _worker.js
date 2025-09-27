@@ -61,7 +61,7 @@ export default {
             subConfig = url.searchParams.get('subconfig') || subConfig;
             const uuid = url.searchParams.get('uuid') || env.UUID;
             const uuid_json = await getLocalData(bphost, uuid);
-
+            const xhttp = url.searchParams.get('xhttp') || false;
             let 最终路径 = url.searchParams.has('proxyip') ? `/snippets/ip=${url.searchParams.get('proxyip')}` : (proxyIP && proxyIP.trim() !== '') ? `/snippets/ip=${encodeURIComponent(proxyIP)}` : `/snippets`;
             let socks5 = null;
             const 全局socks5 = (url.searchParams.has('global')) ? true : false;
@@ -300,7 +300,11 @@ export default {
                         const 伪装域名 = selected.host;
 
                         const 为烈士Link = 'vl' + 'es' + `s://${uuid}@${address}:${port}?security=tls&sni=${伪装域名}&type=ws&host=${伪装域名}&path=${encodeURIComponent(最终路径) + (跳过证书验证 ? '&allowInsecure=1' : '')}&fragment=${encodeURIComponent('1,40-60,30-50,tlshello')}&encryption=none#${encodeURIComponent(addressid + 节点备注)}`;
-                        return 为烈士Link;
+                        
+                        if (xhttp) {
+                            const xhttpLink = 'vl' + 'es' + `s://${uuid}@${address}:${port}?security=tls&sni=${伪装域名}&type=xhttp&host=${伪装域名}&path=${encodeURIComponent(最终路径) + (跳过证书验证 ? '&allowInsecure=1' : '')}&mode=stream-one&fragment=${encodeURIComponent('1,40-60,30-50,tlshello')}&encryption=none#${encodeURIComponent(addressid + 节点备注 + '-XHTTP')}`;
+                            return 为烈士Link + '\n' + xhttpLink;
+                        } else return 为烈士Link;
                     }
                 }).join('\n');
 
@@ -1720,6 +1724,7 @@ async function subHtml(request, hostLength = hosts.length) {
                                         <option value="v" selected>🎯 白嫖哥源码</option>
                                         <option value="t12">📘 天书12源码</option>
                                         <option value="t13">📗 天书13源码(不支持ios客户端、ed配置)</option>
+                                        <option value="my">🔥 ymyuuu源码(支持xhttp)</option>
                                     </select>
                                 </div>
 
@@ -1966,8 +1971,8 @@ async function subHtml(request, hostLength = hosts.length) {
             </div>
             
             <!-- 高级参数设置 -->
-            <div class="section">
-                <div class="section-title">🔧 高级参数设置</div>
+            <div class="section collapsible collapsed">
+                <div class="section-title" onclick="toggleSection(this)">🔧 节点高级设置</div>
                 <div class="section-content">
                     <div class="form-group">
                         <label style="margin-bottom: 15px;">高级参数选项：</label>
@@ -2403,6 +2408,15 @@ async function subHtml(request, hostLength = hosts.length) {
                 params.append('scv', 'true');
             }
             
+            // 检查是否选择了 ymyuuu 源码，如果是则添加 xhttp=true 参数
+            const isSnippetsTab = activeTab && activeTab.id === 'snippets-tab';
+            if (isSnippetsTab) {
+                const selectedSource = getSelectedSnippetSource();
+                if (selectedSource === 'my') {
+                    params.append('xhttp', 'true');
+                }
+            }
+            
             // 组合最终URL
             const queryString = params.toString();
             if (queryString) {
@@ -2773,7 +2787,8 @@ async function subHtml(request, hostLength = hosts.length) {
         const snippetUrlMap = {
             'v': 'https://raw.githubusercontent.com/cmliu/CF-Workers-BPSUB/main/snippet/v.js',
             't12': 'https://raw.githubusercontent.com/cmliu/CF-Workers-BPSUB/main/snippet/t12.js', 
-            't13': 'https://raw.githubusercontent.com/cmliu/CF-Workers-BPSUB/main/snippet/t13.js'
+            't13': 'https://raw.githubusercontent.com/cmliu/CF-Workers-BPSUB/main/snippet/t13.js',
+            'my': 'https://raw.githubusercontent.com/cmliu/CF-Workers-BPSUB/main/snippet/my.js'
         };
 
         // 获取当前选中的源码类型

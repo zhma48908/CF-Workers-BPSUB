@@ -68,9 +68,9 @@ export default {
             if (url.searchParams.has('socks5') && url.searchParams.get('socks5') != '') {
                 socks5 = url.searchParams.get('socks5');
                 最终路径 = 全局socks5 ? `/snippets/gs5=${socks5}` : `/snippets/s5=${socks5}`;
-            } else if (url.searchParams.has('http') && url.searchParams.get('http') == '') {
+            } else if (url.searchParams.has('http') && url.searchParams.get('http') != '') {
                 socks5 = url.searchParams.get('http');
-                最终路径 = 全局socks5 ? `/http://${socks5}` : `/http=${socks5}`;
+                最终路径 = 全局socks5 ? `/snippets/gh=${socks5}` : `/snippets/h=${socks5}`;
             }
 
             if (url.searchParams.has('ed') && url.searchParams.get('ed') != '') 最终路径 += `?ed=${url.searchParams.get('ed')}`;
@@ -1889,6 +1889,10 @@ async function subHtml(request, hostLength = hosts.length) {
                                 <input type="radio" name="proxyMode" value="socks5" onchange="toggleProxyMode()">
                                 <span class="radio-label">🔒 Socks5 代理</span>
                             </label>
+                            <label class="radio-option">
+                                <input type="radio" name="proxyMode" value="http" onchange="toggleProxyMode()">
+                                <span class="radio-label">📡 HTTP 代理</span>
+                            </label>
                         </div>
                     </div>
                     
@@ -1909,6 +1913,19 @@ async function subHtml(request, hostLength = hosts.length) {
                             </label>
                         </div>
                         <input type="text" id="socks5" placeholder="user:password@127.0.0.1:1080 或 127.0.0.1:1080" value="">
+                    </div>
+                    
+                    <!-- HTTP 输入框 -->
+                    <div class="form-group" id="http-group" style="display: none;">
+                        <!-- 标题行：HTTP代理 + 全局代理选项 -->
+                        <div class="socks5-header">
+                            <label for="http">HTTP代理：</label>
+                            <label class="checkbox-option-inline" for="globalHttp">
+                                <input type="checkbox" id="globalHttp">
+                                <span class="checkbox-label-inline">🌍 启用全局代理</span>
+                            </label>
+                        </div>
+                        <input type="text" id="http" placeholder="user:password@127.0.0.1:8080 或 127.0.0.1:8080" value="">
                     </div>
                     
                     <!-- ProxyIP 详细说明 -->
@@ -2045,6 +2062,7 @@ async function subHtml(request, hostLength = hosts.length) {
                 proxyHost: document.getElementById('proxyHost').value,
                 proxyip: document.getElementById('proxyip').value,
                 socks5: document.getElementById('socks5').value,
+                http: document.getElementById('http').value,
                 subapi: document.getElementById('subapi').value,
                 subconfig: document.getElementById('subconfig').value,
                 snippetUuid: document.getElementById('snippetUuid') ? document.getElementById('snippetUuid').value : '',
@@ -2052,6 +2070,7 @@ async function subHtml(request, hostLength = hosts.length) {
                 ipMode: document.querySelector('input[name="ipMode"]:checked')?.value || 'custom',
                 snippetSource: document.getElementById('snippetSourceSelect')?.value || 'v',
                 globalSocks5: document.getElementById('globalSocks5').checked,
+                globalHttp: document.getElementById('globalHttp').checked,
                 enableEd: document.getElementById('enableEd') ? document.getElementById('enableEd').checked : false,
                 skipCertVerify: document.getElementById('skipCertVerify') ? document.getElementById('skipCertVerify').checked : false,
                 activeTab: currentTab, // 保存当前选中的选项卡
@@ -2084,6 +2103,7 @@ async function subHtml(request, hostLength = hosts.length) {
                 if (formData.proxyHost) document.getElementById('proxyHost').value = formData.proxyHost;
                 if (formData.proxyip) document.getElementById('proxyip').value = formData.proxyip;
                 if (formData.socks5) document.getElementById('socks5').value = formData.socks5;
+                if (formData.http) document.getElementById('http').value = formData.http;
                 if (formData.subapi) document.getElementById('subapi').value = formData.subapi;
                 if (formData.subconfig) document.getElementById('subconfig').value = formData.subconfig;
                 if (formData.snippetUuid && document.getElementById('snippetUuid')) {
@@ -2133,6 +2153,13 @@ async function subHtml(request, hostLength = hosts.length) {
                     document.getElementById('globalSocks5').dispatchEvent(new Event('change'));
                 }
                 
+                // 设置全局HTTP选项
+                if (formData.globalHttp !== undefined) {
+                    document.getElementById('globalHttp').checked = formData.globalHttp;
+                    // 手动触发change事件更新样式
+                    document.getElementById('globalHttp').dispatchEvent(new Event('change'));
+                }
+                
                 // 设置高级参数选项
                 if (formData.enableEd !== undefined && document.getElementById('enableEd')) {
                     document.getElementById('enableEd').checked = formData.enableEd;
@@ -2156,7 +2183,7 @@ async function subHtml(request, hostLength = hosts.length) {
         
         // 设置表单字段的自动保存事件监听器
         function setupAutoSave() {
-            const fields = ['ips', 'subGenerator', 'proxyHost', 'proxyip', 'socks5', 'subapi', 'subconfig', 'snippetUuid'];
+            const fields = ['ips', 'subGenerator', 'proxyHost', 'proxyip', 'socks5', 'http', 'subapi', 'subconfig', 'snippetUuid'];
             
             // 为文本输入字段添加事件监听
             fields.forEach(fieldId => {
@@ -2234,6 +2261,11 @@ async function subHtml(request, hostLength = hosts.length) {
                 globalSocks5Checkbox.addEventListener('change', saveFormData);
             }
             
+            const globalHttpCheckbox = document.getElementById('globalHttp');
+            if (globalHttpCheckbox) {
+                globalHttpCheckbox.addEventListener('change', saveFormData);
+            }
+            
             // 为高级参数复选框添加事件监听
             const enableEdCheckbox = document.getElementById('enableEd');
             if (enableEdCheckbox) {
@@ -2252,6 +2284,7 @@ async function subHtml(request, hostLength = hosts.length) {
             const proxyHost = document.getElementById('proxyHost').value.trim();
             const proxyip = document.getElementById('proxyip').value.trim();
             const socks5 = document.getElementById('socks5').value.trim();
+            const http = document.getElementById('http').value.trim();
             const subapi = document.getElementById('subapi').value.trim();
             const subconfig = document.getElementById('subconfig').value.trim();
             const hostLength = ${hostLength};
@@ -2326,6 +2359,28 @@ async function subHtml(request, hostLength = hosts.length) {
                 // 检查是否启用全局Socks5
                 const globalSocks5 = document.getElementById('globalSocks5').checked;
                 if (globalSocks5) {
+                    params.append('global', 'true');
+                }
+            } else if (proxyMode === 'http') {
+                // 处理HTTP代理模式
+                const http = document.getElementById('http').value.trim();
+                if (!http) {
+                    alert('⚠️ 选择HTTP代理模式时，HTTP代理地址不能为空！\\n\\n请输入HTTP代理地址或切换到ProxyIP模式。');
+                    return;
+                }
+                
+                // 智能处理并验证HTTP格式（复用socks5的处理函数）
+                const processedHttp = processSocks5(http);
+                if (!processedHttp) {
+                    alert('⚠️ HTTP代理格式不正确！\\n\\n请检查输入格式，例如：\\n• user:password@127.0.0.1:8080\\n• 127.0.0.1:8080');
+                    return;
+                }
+                
+                params.append('http', processedHttp);
+                
+                // 检查是否启用全局HTTP代理
+                const globalHttp = document.getElementById('globalHttp').checked;
+                if (globalHttp) {
                     params.append('global', 'true');
                 }
             } else {
@@ -2961,6 +3016,7 @@ async function subHtml(request, hostLength = hosts.length) {
             const proxyMode = document.querySelector('input[name="proxyMode"]:checked').value;
             const proxyipGroup = document.getElementById('proxyip-group');
             const socks5Group = document.getElementById('socks5-group');
+            const httpGroup = document.getElementById('http-group');
             
             // 更新单选框样式
             document.querySelectorAll('input[name="proxyMode"]').forEach(radio => {
@@ -2976,9 +3032,15 @@ async function subHtml(request, hostLength = hosts.length) {
             if (proxyMode === 'socks5') {
                 proxyipGroup.style.display = 'none';
                 socks5Group.style.display = 'block';
+                httpGroup.style.display = 'none';
+            } else if (proxyMode === 'http') {
+                proxyipGroup.style.display = 'none';
+                socks5Group.style.display = 'none';
+                httpGroup.style.display = 'block';
             } else {
                 proxyipGroup.style.display = 'block';
                 socks5Group.style.display = 'none';
+                httpGroup.style.display = 'none';
             }
         }
         

@@ -1386,21 +1386,6 @@ async function subHtml(request, hostLength = hosts.length) {
             overflow: hidden;
         }
         
-        .socks5-header label[for="socks5"] {
-            margin-bottom: 0;
-            flex-shrink: 0;
-            user-select: text;
-            position: relative;
-            z-index: 10;
-            font-size: 1em;
-            display: flex;
-            align-items: center;
-            height: 24px;
-            min-height: 24px;
-            align-self: center;
-            line-height: 1;
-        }
-        
         /* 行内复选框样式 */
         .checkbox-option-inline {
             display: flex;
@@ -1586,11 +1571,6 @@ async function subHtml(request, hostLength = hosts.length) {
                 height: auto;
                 min-height: 24px;
                 max-height: none;
-            }
-            
-            .socks5-header label[for="socks5"] {
-                align-self: center;
-                margin-bottom: 5px;
             }
             
             .checkbox-option-inline {
@@ -1898,7 +1878,11 @@ async function subHtml(request, hostLength = hosts.length) {
                     
                     <!-- ProxyIP 输入框 -->
                     <div class="form-group" id="proxyip-group">
-                        <label for="proxyip">ProxyIP地址：</label>
+                        <!-- 标题行：ProxyIP地址 -->
+                        <div class="socks5-header">
+                            <label for="proxyip">ProxyIP地址：</label>
+                            <span></span>
+                        </div>
                         <input type="text" id="proxyip" placeholder="proxyip.fxxk.dedyn.io:443" value="">
                     </div>
                     

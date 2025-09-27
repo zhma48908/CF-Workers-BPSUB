@@ -3,7 +3,7 @@ let subConverter = 'sUBaPI.cMlIUSSSS.nET';
 let subConfig = 'https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Mini_MultiMode.ini';
 let subProtocol = 'https';
 let SUBUpdateTime = 6; // 单位小时
-let proxyIP = 'proxyip.fxxk.dedyn.io:443';
+let proxyIP = '';
 let ips = ['3Q.bestip-one.cf.090227.xyz#感谢白嫖哥t.me/bestip_one'];
 let FileName = 'BPSUB';
 let EndPS = '';
@@ -60,11 +60,10 @@ export default {
                 subConverter = subConverter.split("//")[1] || subConverter;
             }
             subConfig = url.searchParams.get('subconfig') || subConfig;
-            const uuid =  url.searchParams.get('uuid') || env.UUID;
+            const uuid = url.searchParams.get('uuid') || env.UUID;
             const uuid_json = await getLocalData(bphost, uuid);
-            proxyIP = url.searchParams.get('proxyip') || proxyIP;
 
-            let 最终路径 = `/snippets/ip=${proxyIP}`;
+            let 最终路径 = url.searchParams.has('proxyip') ? `/snippets/ip=${url.searchParams.get('proxyip')}` : (proxyIP && proxyIP.trim() !== '') ? `/snippets/ip=${encodeURIComponent(proxyIP)}` : `/snippets`;
             let socks5 = null;
             const 全局socks5 = (url.searchParams.has('global')) ? true : false;
             if (url.searchParams.has('socks5') && url.searchParams.get('socks5') != '') {
@@ -74,7 +73,7 @@ export default {
                 socks5 = url.searchParams.get('http');
                 最终路径 = 全局socks5 ? `/http://${socks5}` : `/http=${socks5}`;
             }
-            
+
             const responseHeaders = {
                 "content-type": "text/plain; charset=utf-8",
                 "Profile-Update-Interval": `${SUBUpdateTime}`,

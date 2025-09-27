@@ -313,7 +313,7 @@ async function 获取SOCKS5账号(address) {
 }
 function 解析地址端口(反代IP) {
     const proxyIP = 反代IP.toLowerCase();
-    let 地址, 端口 = 443;
+    let 地址 = proxyIP, 端口 = 443;
     if (!proxyIP || proxyIP == '') {
         地址 = 'proxyip.fxxk.dedyn.io'; //默认反代
     } else if (proxyIP.includes(']:')) {

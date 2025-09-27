@@ -189,7 +189,7 @@ async function handleWebSocket(request) {
             if (data.byteLength < 24) return;
 
             // UUID验证
-            if (FIXED_UUID && FIXED_UUID != '') {
+            if (FIXED_UUID) {
                 const uuidBytes = new Uint8Array(data.slice(1, 17));
                 const expectedUUID = FIXED_UUID.replace(/-/g, '');
                 for (let i = 0; i < 16; i++) {
@@ -320,6 +320,11 @@ async function handleWebSocket(request) {
     });
 }
 
+// UUID 工具函数
+function parseUUID(uuid) {
+    return uuid.replaceAll('-', '').match(/.{2}/g).map(x => parseInt(x, 16));
+}
+
 // SOCKS5连接
 async function socks5Connect(targetHost, targetPort) {
     const parsedSocks5Address = await 获取SOCKS5账号(我的SOCKS5账号);
@@ -374,6 +379,15 @@ async function readVlessHeader(reader) {
 
         // 跳过版本和UUID(17字节)，读取addon长度
         if (offset < 18) continue;
+        
+        // UUID验证
+        if (FIXED_UUID) {
+            const uuidBytes = parseUUID(FIXED_UUID);
+            if (!buffer.slice(1, 17).every((b, i) => b === uuidBytes[i])) {
+                return null;
+            }
+        }
+        
         const addonLen = buffer[17];
         if (offset < 18 + addonLen + 1) continue;
         const cmd = buffer[18 + addonLen];

@@ -1345,6 +1345,31 @@ async function subHtml(request, hostLength = hosts.length) {
             transition: all 0.3s ease;
         }
         
+        /* 高级参数容器样式 */
+        .advanced-params-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .advanced-params-container .checkbox-option {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        /* 响应式：移动端分行显示 */
+        @media (max-width: 768px) {
+            .advanced-params-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .advanced-params-container .checkbox-option {
+                flex: none;
+                min-width: auto;
+            }
+        }
+        
         /* Socks5 标题行样式 */
         .socks5-header {
             display: flex;
@@ -1950,6 +1975,31 @@ async function subHtml(request, hostLength = hosts.length) {
                 </div>
             </div>
             
+            <!-- 高级参数设置 -->
+            <div class="section">
+                <div class="section-title">🔧 高级参数设置</div>
+                <div class="section-content">
+                    <div class="form-group">
+                        <label style="margin-bottom: 15px;">高级参数选项：</label>
+                        <div class="advanced-params-container">
+                            <label class="checkbox-option" for="enableEd">
+                                <input type="checkbox" id="enableEd">
+                                <span class="checkbox-label">🎯 启用 ed=2560</span>
+                            </label>
+                            <label class="checkbox-option" for="skipCertVerify">
+                                <input type="checkbox" id="skipCertVerify">
+                                <span class="checkbox-label">🔓 跳过证书验证</span>
+                            </label>
+                        </div>
+                        <div class="example">⚙️ 高级参数说明：
+• ed=2560：启用0-RTT
+• scv：跳过TLS证书验证，适用于自签名证书场景
+• 注意：天书13源码不支持ed参数配置
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <!-- 生成按钮 -->
             <div class="button-container">
                 <button class="generate-btn" onclick="generateSubscription()">
@@ -2002,6 +2052,8 @@ async function subHtml(request, hostLength = hosts.length) {
                 ipMode: document.querySelector('input[name="ipMode"]:checked')?.value || 'custom',
                 snippetSource: document.getElementById('snippetSourceSelect')?.value || 'v',
                 globalSocks5: document.getElementById('globalSocks5').checked,
+                enableEd: document.getElementById('enableEd') ? document.getElementById('enableEd').checked : false,
+                skipCertVerify: document.getElementById('skipCertVerify') ? document.getElementById('skipCertVerify').checked : false,
                 activeTab: currentTab, // 保存当前选中的选项卡
                 timestamp: Date.now()
             };
@@ -2079,6 +2131,19 @@ async function subHtml(request, hostLength = hosts.length) {
                     document.getElementById('globalSocks5').checked = formData.globalSocks5;
                     // 手动触发change事件更新样式
                     document.getElementById('globalSocks5').dispatchEvent(new Event('change'));
+                }
+                
+                // 设置高级参数选项
+                if (formData.enableEd !== undefined && document.getElementById('enableEd')) {
+                    document.getElementById('enableEd').checked = formData.enableEd;
+                    // 手动触发change事件更新样式
+                    document.getElementById('enableEd').dispatchEvent(new Event('change'));
+                }
+                
+                if (formData.skipCertVerify !== undefined && document.getElementById('skipCertVerify')) {
+                    document.getElementById('skipCertVerify').checked = formData.skipCertVerify;
+                    // 手动触发change事件更新样式
+                    document.getElementById('skipCertVerify').dispatchEvent(new Event('change'));
                 }
                 
                 console.log('表单数据加载完成');
@@ -2167,6 +2232,17 @@ async function subHtml(request, hostLength = hosts.length) {
             const globalSocks5Checkbox = document.getElementById('globalSocks5');
             if (globalSocks5Checkbox) {
                 globalSocks5Checkbox.addEventListener('change', saveFormData);
+            }
+            
+            // 为高级参数复选框添加事件监听
+            const enableEdCheckbox = document.getElementById('enableEd');
+            if (enableEdCheckbox) {
+                enableEdCheckbox.addEventListener('change', saveFormData);
+            }
+            
+            const skipCertVerifyCheckbox = document.getElementById('skipCertVerify');
+            if (skipCertVerifyCheckbox) {
+                skipCertVerifyCheckbox.addEventListener('change', saveFormData);
             }
         }
         
@@ -2277,6 +2353,26 @@ async function subHtml(request, hostLength = hosts.length) {
                 if (snippetUuid) {
                     params.append('uuid', snippetUuid);
                 }
+            }
+            
+            // 处理高级参数
+            const enableEd = document.getElementById('enableEd').checked;
+            const skipCertVerify = document.getElementById('skipCertVerify').checked;
+            
+            // 添加 ed=2560 参数（如果启用且不是天书13源码）
+            if (enableEd) {
+                // 检查是否为天书13源码
+                const selectedSource = getSelectedSnippetSource();
+                const isSnippetsTab = activeTab && activeTab.id === 'snippets-tab';
+                
+                if (!isSnippetsTab || selectedSource !== 't13') {
+                    params.append('ed', '2560');
+                }
+            }
+            
+            // 添加 scv 参数（跳过证书验证）
+            if (skipCertVerify) {
+                params.append('scv', 'true');
             }
             
             // 组合最终URL
@@ -2487,6 +2583,9 @@ async function subHtml(request, hostLength = hosts.length) {
             document.getElementById(tabName + '-tab').classList.add('active');
             document.getElementById(tabName + '-panel').classList.add('active');
             
+            // 检查ed选项的可用性
+            checkEdOptionAvailability();
+            
             // 保存当前选项卡状态到缓存
             saveFormData();
         }
@@ -2631,8 +2730,38 @@ async function subHtml(request, hostLength = hosts.length) {
             // 重新加载对应的源码
             loadSnippetCode();
             
+            // 检查ed选项的可用性
+            checkEdOptionAvailability();
+            
             // 保存到缓存
             saveFormData();
+        }
+
+        // 检查ed选项的可用性
+        function checkEdOptionAvailability() {
+            const enableEdCheckbox = document.getElementById('enableEd');
+            const enableEdOption = enableEdCheckbox ? enableEdCheckbox.closest('.checkbox-option') : null;
+            
+            if (enableEdCheckbox && enableEdOption) {
+                const selectedSource = getSelectedSnippetSource();
+                const activeTab = document.querySelector('.tab-button.active');
+                const isSnippetsTab = activeTab && activeTab.id === 'snippets-tab';
+                
+                if (isSnippetsTab && selectedSource === 't13') {
+                    // 天书13源码不支持ed参数，禁用选项
+                    enableEdCheckbox.disabled = true;
+                    enableEdCheckbox.checked = false;
+                    enableEdOption.style.opacity = '0.5';
+                    enableEdOption.style.pointerEvents = 'none';
+                    enableEdOption.title = '天书13源码不支持ed参数配置';
+                } else {
+                    // 其他情况启用选项
+                    enableEdCheckbox.disabled = false;
+                    enableEdOption.style.opacity = '1';
+                    enableEdOption.style.pointerEvents = 'auto';
+                    enableEdOption.title = '';
+                }
+            }
         }
 
         // 更新 Snippet 代码
@@ -3042,6 +3171,9 @@ async function subHtml(request, hostLength = hosts.length) {
             toggleIPMode();
             toggleProxyMode();
             
+            // 初始化ed选项可用性检查
+            checkEdOptionAvailability();
+            
             // 初始化复选框事件监听
             const globalSocks5Checkbox = document.getElementById('globalSocks5');
             if (globalSocks5Checkbox) {
@@ -3078,6 +3210,45 @@ async function subHtml(request, hostLength = hosts.length) {
                         }
                     });
                 }
+            }
+            
+            // 初始化高级参数复选框事件监听
+            const enableEdCheckbox = document.getElementById('enableEd');
+            if (enableEdCheckbox) {
+                const checkboxOption = enableEdCheckbox.closest('.checkbox-option');
+                if (checkboxOption && enableEdCheckbox.checked) {
+                    checkboxOption.classList.add('checked');
+                }
+                
+                enableEdCheckbox.addEventListener('change', function() {
+                    const checkboxOption = this.closest('.checkbox-option');
+                    if (checkboxOption) {
+                        if (this.checked) {
+                            checkboxOption.classList.add('checked');
+                        } else {
+                            checkboxOption.classList.remove('checked');
+                        }
+                    }
+                });
+            }
+            
+            const skipCertVerifyCheckbox = document.getElementById('skipCertVerify');
+            if (skipCertVerifyCheckbox) {
+                const checkboxOption = skipCertVerifyCheckbox.closest('.checkbox-option');
+                if (checkboxOption && skipCertVerifyCheckbox.checked) {
+                    checkboxOption.classList.add('checked');
+                }
+                
+                skipCertVerifyCheckbox.addEventListener('change', function() {
+                    const checkboxOption = this.closest('.checkbox-option');
+                    if (checkboxOption) {
+                        if (this.checked) {
+                            checkboxOption.classList.add('checked');
+                        } else {
+                            checkboxOption.classList.remove('checked');
+                        }
+                    }
+                });
             }
         });
     </script>

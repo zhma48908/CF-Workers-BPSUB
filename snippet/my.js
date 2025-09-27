@@ -64,7 +64,7 @@ export default {
                 // XHTTP 处理
                 return handleXhttp(request);
             } else {
-                return new Response(`${解析地址端口(反代IP)}`, { status: 200 });
+                return new Response('Hello World!', { status: 200 });
             }
         }
     }

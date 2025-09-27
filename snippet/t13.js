@@ -135,7 +135,7 @@ async function 启动传输管道(WS接口, TCP接口) {
             }
             if (启用SOCKS5反代 == 'socks5' && 启用SOCKS5全局反代) {
                 TCP接口 = await 创建SOCKS5接口(识别地址类型, 访问地址, 访问端口);
-            } if (启用SOCKS5反代 == 'http' && 启用SOCKS5全局反代) {
+            } else if (启用SOCKS5反代 == 'http' && 启用SOCKS5全局反代) {
                 TCP接口 = await httpConnect(访问地址, 访问端口);
             } else {
                 try {

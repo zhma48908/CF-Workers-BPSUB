@@ -41,7 +41,7 @@ export default {
 
             if (我的SOCKS5账号 && 获取SOCKS5账号(我的SOCKS5账号)) {
                 try {
-                    我的SOCKS5账号 = 我的SOCKS5账号;
+                    parsedSocks5Address = 获取SOCKS5账号(我的SOCKS5账号)
                     启用SOCKS5反代 = url.searchParams.get('http') ? 'http' : 启用SOCKS5反代;
                 } catch (err) {
                     启用SOCKS5反代 = null;
@@ -151,7 +151,7 @@ async function 解析VL标头(二进制数据, WS接口, TCP接口) {
         if (FIXED_UUID && 验证VL的密钥(二进制数据.slice(1, 17)) !== FIXED_UUID) throw new Error('UUID验证失败');
         if (启用SOCKS5反代 == 'socks5' && 启用SOCKS5全局反代) {
             TCP接口 = await 创建SOCKS5接口(识别地址类型, 访问地址, 访问端口);
-        } if (启用SOCKS5反代 == 'http' && 启用SOCKS5全局反代) {
+        } else if (启用SOCKS5反代 == 'http' && 启用SOCKS5全局反代) {
             TCP接口 = await httpConnect(访问地址, 访问端口);
         } else {
             try {

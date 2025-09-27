@@ -1,4 +1,4 @@
-const FIXED_UUID = ''; //天书13改
+const FIXED_UUID = '';
 import { connect } from 'cloudflare:sockets';
 //本脚本不支持任何苹果ios客户端
 //说明：抛弃了ed配置，不要设置/?ed=2560等任何ed，重构全部传输逻辑，去除订阅功能，自己手戳节点，支持基础反代路径传参/proxyip=，建议pages部署
@@ -313,7 +313,7 @@ async function 获取SOCKS5账号(address) {
 }
 function 解析地址端口(反代IP) {
     const proxyIP = 反代IP.toLowerCase();
-    let 地址, 端口 = 443;
+    let 地址 = proxyIP, 端口 = 443;
     if (!proxyIP || proxyIP == '') {
         地址 = 'proxyip.fxxk.dedyn.io'; //默认反代
     } else if (proxyIP.includes(']:')) {

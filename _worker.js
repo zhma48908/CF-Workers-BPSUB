@@ -2771,9 +2771,9 @@ async function subHtml(request, hostLength = hosts.length) {
 
         // 源码URL映射
         const snippetUrlMap = {
-            'v': GITHUB_PROXY + 'https://raw.githubusercontent.com/cmliu/CF-Workers-BPSUB/main/snippet/v.js',
-            't12': GITHUB_PROXY + 'https://raw.githubusercontent.com/cmliu/CF-Workers-BPSUB/main/snippet/t12.js', 
-            't13': GITHUB_PROXY + 'https://raw.githubusercontent.com/cmliu/CF-Workers-BPSUB/main/snippet/t13.js'
+            'v': 'https://raw.githubusercontent.com/cmliu/CF-Workers-BPSUB/main/snippet/v.js',
+            't12': 'https://raw.githubusercontent.com/cmliu/CF-Workers-BPSUB/main/snippet/t12.js', 
+            't13': 'https://raw.githubusercontent.com/cmliu/CF-Workers-BPSUB/main/snippet/t13.js'
         };
 
         // 获取当前选中的源码类型
@@ -2788,7 +2788,7 @@ async function subHtml(request, hostLength = hosts.length) {
             const snippetJsUrl = snippetUrlMap[sourceType];
             
             try {
-                const response = await fetch(snippetJsUrl);
+                const response = await fetch(GITHUB_PROXY + snippetJsUrl);
                 if (!response.ok) {
                     throw new Error('获取代码失败');
                 }

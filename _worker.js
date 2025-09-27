@@ -3,7 +3,6 @@ let subConverter = 'sUBaPI.cMlIUSSSS.nET';
 let subConfig = 'https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Mini_MultiMode.ini';
 let subProtocol = 'https';
 let SUBUpdateTime = 6; // 单位小时
-let proxyIP = '';
 let ips = ['3Q.bestip-one.cf.090227.xyz#感谢白嫖哥t.me/bestip_one'];
 let FileName = 'BPSUB';
 let EndPS = '';
@@ -19,7 +18,7 @@ export default {
             subConverter = subConverter.split("//")[1] || subConverter;
         }
         subConfig = env.SUBCONFIG || subConfig;
-        proxyIP = env.PROXYIP || proxyIP;
+        const proxyIP = env.PROXYIP || null;
         if (env.ADD) ips = await 整理成数组(env.ADD);
         FileName = env.SUBNAME || FileName;
         EndPS = env.PS || EndPS;
@@ -782,7 +781,7 @@ async function subHtml(request, hostLength = hosts.length) {
             align-items: center;
         }
         
-        textarea, input[type="text"] {
+        textarea, input[type="text"], select {
             width: 100%;
             padding: 15px 18px;
             border: 2px solid rgba(0, 255, 255, 0.2);
@@ -796,7 +795,7 @@ async function subHtml(request, hostLength = hosts.length) {
             z-index: 10;
         }
         
-        textarea:focus, input[type="text"]:focus {
+        textarea:focus, input[type="text"]:focus, select:focus {
             outline: none;
             border-color: #00ffff;
             box-shadow: 0 0 0 4px rgba(0, 255, 255, 0.2), 0 0 20px rgba(0, 255, 255, 0.1);
@@ -805,6 +804,35 @@ async function subHtml(request, hostLength = hosts.length) {
         
         textarea::placeholder, input[type="text"]::placeholder {
             color: #718096;
+        }
+        
+        select {
+            cursor: pointer;
+            font-weight: 500;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8"><path fill="%2300ffff" d="M6 8L0 2h12L6 8z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            padding-right: 45px;
+        }
+        
+        select:hover {
+            border-color: rgba(0, 255, 255, 0.4);
+            background-color: rgba(0, 255, 255, 0.05);
+        }
+        
+        select option {
+            background: rgba(26, 32, 44, 0.95);
+            color: #e2e8f0;
+            padding: 12px 15px;
+            border: none;
+            font-weight: 500;
+        }
+        
+        select option:hover, select option:checked {
+            background: rgba(0, 255, 255, 0.1);
         }
         
         textarea {
@@ -1690,6 +1718,16 @@ async function subHtml(request, hostLength = hosts.length) {
                                     1️⃣ 进入 规则(Rules) > Snippets → 2️⃣ 创建片段 → 3️⃣ 粘贴下方代码并部署 <br>→ 4️⃣ 片段规则 主机名 > 等于 > 自定义域名 <br>→ 5️⃣ 创建新代理DNS记录 > CNAME > 自定义域 > <strong><span onclick="copyToClipboard('cf.090227.xyz')" style="cursor: pointer; color: #00ff9d; text-decoration: underline;">cf.090227.xyz</span></strong>
                                 </p>
                                 
+                                <!-- 源码选择器 -->
+                                <div style="margin-bottom: 20px;">
+                                    <label for="snippetSourceSelect" style="display: block; margin-bottom: 12px; color: #e2e8f0; font-weight: 600;">选择源码版本：</label>
+                                    <select id="snippetSourceSelect" onchange="changeSnippetSource()">
+                                        <option value="v" selected>🎯 白嫖哥源码</option>
+                                        <option value="t12">📘 天书12源码</option>
+                                        <option value="t13">📗 天书13源码(不支持ios客户端、ed配置)</option>
+                                    </select>
+                                </div>
+
                                 <!-- UUID 输入框和按钮 -->
                                 <div style="margin-bottom: 20px;">
                                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
@@ -1961,6 +1999,7 @@ async function subHtml(request, hostLength = hosts.length) {
                 snippetUuid: document.getElementById('snippetUuid') ? document.getElementById('snippetUuid').value : '',
                 proxyMode: document.querySelector('input[name="proxyMode"]:checked')?.value || 'proxyip',
                 ipMode: document.querySelector('input[name="ipMode"]:checked')?.value || 'custom',
+                snippetSource: document.getElementById('snippetSourceSelect')?.value || 'v',
                 globalSocks5: document.getElementById('globalSocks5').checked,
                 activeTab: currentTab, // 保存当前选中的选项卡
                 timestamp: Date.now()
@@ -2016,6 +2055,15 @@ async function subHtml(request, hostLength = hosts.length) {
                     if (proxyModeRadio) {
                         proxyModeRadio.checked = true;
                         toggleProxyMode();
+                    }
+                }
+                
+                // 设置源码选择
+                if (formData.snippetSource) {
+                    const snippetSourceSelect = document.getElementById('snippetSourceSelect');
+                    if (snippetSourceSelect) {
+                        snippetSourceSelect.value = formData.snippetSource;
+                        changeSnippetSource();
                     }
                 }
                 
@@ -2107,6 +2155,12 @@ async function subHtml(request, hostLength = hosts.length) {
             document.querySelectorAll('input[name="proxyMode"]').forEach(radio => {
                 radio.addEventListener('change', saveFormData);
             });
+            
+            // 为源码选择下拉框添加事件监听
+            const snippetSourceSelect = document.getElementById('snippetSourceSelect');
+            if (snippetSourceSelect) {
+                snippetSourceSelect.addEventListener('change', saveFormData);
+            }
             
             // 为复选框添加事件监听
             const globalSocks5Checkbox = document.getElementById('globalSocks5');
@@ -2539,9 +2593,24 @@ async function subHtml(request, hostLength = hosts.length) {
 
         let snippetCodeCache = '';
 
+        // 源码URL映射
+        const snippetUrlMap = {
+            'v': 'https://raw.githubusercontent.com/cmliu/CF-Workers-BPSUB/main/snippet/v.js',
+            't12': 'https://raw.githubusercontent.com/cmliu/CF-Workers-BPSUB/main/snippet/t12.js', 
+            't13': 'https://raw.githubusercontent.com/cmliu/CF-Workers-BPSUB/main/snippet/t13.js'
+        };
+
+        // 获取当前选中的源码类型
+        function getSelectedSnippetSource() {
+            const selectElement = document.getElementById('snippetSourceSelect');
+            return selectElement ? selectElement.value : 'v';
+        }
+
         // 加载 Snippet 代码
         async function loadSnippetCode() {
-            const snippetJsUrl = 'https://raw.githubusercontent.com/cmliu/CF-Workers-BPSUB/main/snippet/t13.js';
+            const sourceType = getSelectedSnippetSource();
+            const snippetJsUrl = snippetUrlMap[sourceType];
+            
             try {
                 const response = await fetch(snippetJsUrl);
                 if (!response.ok) {
@@ -2554,6 +2623,15 @@ async function subHtml(request, hostLength = hosts.length) {
                 console.error('加载Snippet代码失败:', error);
                 document.getElementById('snippetCode').value = \`加载代码失败，请自行从\\n\${snippetJsUrl}\\n获取最新代码\`;
             }
+        }
+
+        // 源码选择变更处理函数
+        function changeSnippetSource() {
+            // 重新加载对应的源码
+            loadSnippetCode();
+            
+            // 保存到缓存
+            saveFormData();
         }
 
         // 更新 Snippet 代码
@@ -2949,6 +3027,15 @@ async function subHtml(request, hostLength = hosts.length) {
                     toggleProxyMode();
                 });
             });
+            
+            // 初始化源码选择下拉框状态
+            const snippetSourceSelect = document.getElementById('snippetSourceSelect');
+            if (snippetSourceSelect) {
+                // 添加事件监听
+                snippetSourceSelect.addEventListener('change', function() {
+                    changeSnippetSource();
+                });
+            }
             
             // 执行初始切换以确保显示状态正确
             toggleIPMode();

@@ -1952,7 +1952,7 @@ async function subHtml(request, hostLength = hosts.length) {
                 <div class="section-content">
                     <div class="form-group">
                         <label for="subapi">订阅转换后端：</label>
-                        <input type="text" id="subapi" placeholder="${subProtocol}://${subConverter}" value="">
+                        <input type="text" id="subapi" placeholder="${subProtocol}://${subConverter.toLowerCase()}" value="">
                         <div class="example">🔄 用于将生成的VLESS链接转换为Clash/SingBox等格式的后端服务
                         </div>
                     </div>

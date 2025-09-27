@@ -350,27 +350,6 @@ export default {
                     headers: { 'Content-Type': 'text/plain; charset=utf-8' }
                 });
             }
-        } else if (url.pathname === '/proxy_host.js') {
-            // 代理主机Worker代码获取
-            try {
-                const jsResponse = await fetch('https://raw.githubusercontent.com/cmliu/CF-Workers-BPSUB/main/proxy_host/_worker.js');
-                if (!jsResponse.ok) {
-                    throw new Error('获取代码失败');
-                }
-
-                const jsCode = await jsResponse.text();
-                return new Response(jsCode, {
-                    headers: {
-                        'Content-Type': 'text/plain; charset=utf-8',
-                        'Cache-Control': 'public, max-age=300' // 5分钟缓存，保证及时更新
-                    }
-                });
-            } catch (error) {
-                return new Response('获取代码失败: ' + error.message, {
-                    status: 500,
-                    headers: { 'Content-Type': 'text/plain; charset=utf-8' }
-                });
-            }
         } else {
             return await subHtml(request, hosts.length);
         }
@@ -2669,8 +2648,8 @@ async function subHtml(request, hostLength = hosts.length) {
         // 加载Worker代码
         async function loadWorkerCode() {
             try {
-                const currentDomain = window.location.host;
-                const response = await fetch(\`https://\${currentDomain}/proxy_host.js\`);
+                const workerJsUrl = GITHUB_PROXY + 'https://raw.githubusercontent.com/cmliu/CF-Workers-BPSUB/main/proxy_host/_worker.js';
+                const response = await fetch(workerJsUrl);
                 if (!response.ok) {
                     throw new Error('获取代码失败');
                 }
@@ -2768,12 +2747,15 @@ async function subHtml(request, hostLength = hosts.length) {
         }
 
         let snippetCodeCache = '';
+        
+        // GitHub代理配置
+        const GITHUB_PROXY = 'http://github.cmliussss.net/';
 
         // 源码URL映射
         const snippetUrlMap = {
-            'v': 'https://raw.githubusercontent.com/cmliu/CF-Workers-BPSUB/main/snippet/v.js',
-            't12': 'https://raw.githubusercontent.com/cmliu/CF-Workers-BPSUB/main/snippet/t12.js', 
-            't13': 'https://raw.githubusercontent.com/cmliu/CF-Workers-BPSUB/main/snippet/t13.js'
+            'v': GITHUB_PROXY + 'https://raw.githubusercontent.com/cmliu/CF-Workers-BPSUB/main/snippet/v.js',
+            't12': GITHUB_PROXY + 'https://raw.githubusercontent.com/cmliu/CF-Workers-BPSUB/main/snippet/t12.js', 
+            't13': GITHUB_PROXY + 'https://raw.githubusercontent.com/cmliu/CF-Workers-BPSUB/main/snippet/t13.js'
         };
 
         // 获取当前选中的源码类型

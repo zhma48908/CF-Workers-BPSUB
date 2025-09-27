@@ -1966,8 +1966,8 @@ async function subHtml(request, hostLength = hosts.length) {
             </div>
             
             <!-- 高级参数设置 -->
-            <div class="section">
-                <div class="section-title">🔧 高级参数设置</div>
+            <div class="section collapsible collapsed">
+                <div class="section-title" onclick="toggleSection(this)">🔧 节点高级设置</div>
                 <div class="section-content">
                     <div class="form-group">
                         <label style="margin-bottom: 15px;">高级参数选项：</label>

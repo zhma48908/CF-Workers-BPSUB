@@ -1270,6 +1270,16 @@ async function subHtml(request, hostLength = hosts.length) {
             background: rgba(0, 255, 255, 0.1);
         }
         
+        .radio-option.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        
+        .radio-option.disabled .radio-label {
+            color: #666;
+        }
+        
         .radio-option input[type="radio"] {
             margin-right: 10px;
             width: 18px;
@@ -2625,8 +2635,35 @@ async function subHtml(request, hostLength = hosts.length) {
             // 检查ed选项的可用性
             checkEdOptionAvailability();
             
+            // 检查HTTP代理选项的可用性
+            checkHttpProxyAvailability(tabName);
+            
             // 保存当前选项卡状态到缓存
             saveFormData();
+        }
+        
+        // 检查HTTP代理选项的可用性
+        function checkHttpProxyAvailability(currentTab) {
+            const httpRadio = document.querySelector('input[name="proxyMode"][value="http"]');
+            const httpRadioOption = httpRadio.closest('.radio-option');
+            const currentProxyMode = document.querySelector('input[name="proxyMode"]:checked').value;
+            
+            if (currentTab === 'snippets') {
+                // Snippets模式：启用HTTP代理选项
+                httpRadio.disabled = false;
+                httpRadioOption.classList.remove('disabled');
+            } else {
+                // 其他模式：禁用HTTP代理选项
+                httpRadio.disabled = true;
+                httpRadioOption.classList.add('disabled');
+                
+                // 如果当前选择的是HTTP代理，自动切换到ProxyIP模式
+                if (currentProxyMode === 'http') {
+                    const proxyipRadio = document.querySelector('input[name="proxyMode"][value="proxyip"]');
+                    proxyipRadio.checked = true;
+                    toggleProxyMode();
+                }
+            }
         }
         
         // 加载Worker代码
@@ -3219,6 +3256,11 @@ async function subHtml(request, hostLength = hosts.length) {
             
             // 初始化ed选项可用性检查
             checkEdOptionAvailability();
+            
+            // 初始化HTTP代理选项可用性检查
+            const activeTab = document.querySelector('.tab-button.active');
+            const currentTab = activeTab ? activeTab.id.replace('-tab', '') : 'workers';
+            checkHttpProxyAvailability(currentTab);
             
             // 初始化复选框事件监听
             const globalSocks5Checkbox = document.getElementById('globalSocks5');

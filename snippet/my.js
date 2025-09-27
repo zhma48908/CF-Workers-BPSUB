@@ -28,8 +28,9 @@ export default {
             启用SOCKS5全局反代 = true;//开启全局SOCKS5
         }
 
-        if (我的SOCKS5账号 && 获取SOCKS5账号(我的SOCKS5账号)) {
+        if (我的SOCKS5账号) {
             try {
+                获取SOCKS5账号(我的SOCKS5账号);
                 启用SOCKS5反代 = url.searchParams.get('http') ? 'http' : 启用SOCKS5反代;
             } catch (err) {
                 启用SOCKS5反代 = null;

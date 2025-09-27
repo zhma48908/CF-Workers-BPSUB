@@ -74,6 +74,8 @@ export default {
                 最终路径 = 全局socks5 ? `/http://${socks5}` : `/http=${socks5}`;
             }
 
+            if (url.searchParams.has('ed') && url.searchParams.get('ed') != '') 最终路径 += `?ed=${url.searchParams.get('ed')}`;
+
             const responseHeaders = {
                 "content-type": "text/plain; charset=utf-8",
                 "Profile-Update-Interval": `${SUBUpdateTime}`,

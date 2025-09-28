@@ -1,4 +1,4 @@
-const FIXED_UUID = '';
+const FIXED_UUID = '';// 天书13
 import { connect } from 'cloudflare:sockets';
 //本脚本不支持任何苹果ios客户端
 //说明：抛弃了ed配置，不要设置/?ed=2560等任何ed，重构全部传输逻辑，去除订阅功能，自己手戳节点，支持基础反代路径传参/proxyip=，建议pages部署

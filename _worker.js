@@ -531,6 +531,7 @@ async function subHtml(request, hostLength = hosts.length) {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@keeex/qrcodejs-kx@1.0.2/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-sha256@0.11.1/src/sha256.min.js"></script>
     <style>
         :root {
             --primary-color: #00ffff;
@@ -2871,11 +2872,39 @@ async function subHtml(request, hostLength = hosts.length) {
             
             if (snippetCodeCache) {
                 const uuid = uuidInput.value.trim();
+                let processedUuid = uuid;
+                
+                // 检查当前选择的源码类型
+                const selectedSource = getSelectedSnippetSource();
+                
+                // 如果选择的是ca110us源码且UUID不为空，则进行sha224处理
+                if (selectedSource === 'ca110us' && uuid !== '') {
+                    try {
+                        // 使用sha224函数处理UUID
+                        if (typeof window.sha224 !== 'undefined') {
+                            processedUuid = window.sha224(uuid);
+                            console.log('🎯 使用 window.sha224 处理UUID');
+                            console.log('📝 原始UUID:', uuid);
+                            console.log('🔐 SHA-224结果:', processedUuid);
+                        } else if (typeof sha224 !== 'undefined') {
+                            processedUuid = sha224(uuid);
+                            console.log('🎯 使用 sha224 处理UUID');
+                            console.log('📝 原始UUID:', uuid);
+                            console.log('🔐 SHA-224结果:', processedUuid);
+                        } else {
+                            console.warn('⚠️ SHA224函数未加载，跳过验证');
+                        }
+                    } catch (error) {
+                        console.error('❌ SHA224处理失败:', error);
+                        processedUuid = ''; // 失败时跳过验证
+                    }
+                }
+                
                 let updatedCode = snippetCodeCache;
                 
                 // 替换第一行的 FIXED_UUID 值
                 const firstLine = "const FIXED_UUID = '';";
-                const newFirstLine = \`const FIXED_UUID = '\${uuid}';\`;
+                const newFirstLine = \`const FIXED_UUID = '\${processedUuid}';\`;
                 updatedCode = updatedCode.replace(firstLine, newFirstLine);
                 
                 snippetCodeElement.value = updatedCode;

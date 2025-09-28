@@ -6,58 +6,58 @@ let 启用SOCKS5全局反代 = false;
 let 我的SOCKS5账号 = '';
 export default {
     async fetch(request) {
+        const url = new URL(request.url);
+        我的SOCKS5账号 = url.searchParams.get('socks5') || url.searchParams.get('http');
+        启用SOCKS5全局反代 = url.searchParams.has('globalproxy');
+        if (url.pathname.toLowerCase().includes('/socks5=') || (url.pathname.includes('/s5=')) || (url.pathname.includes('/gs5='))) {
+            我的SOCKS5账号 = url.pathname.split('5=')[1];
+            启用SOCKS5反代 = 'socks5';
+            启用SOCKS5全局反代 = url.pathname.includes('/gs5=') ? true : 启用SOCKS5全局反代;
+        } else if (url.pathname.toLowerCase().includes('/http=')) {
+            我的SOCKS5账号 = url.pathname.split('/http=')[1];
+            启用SOCKS5反代 = 'http';
+        } else if (url.pathname.toLowerCase().includes('/socks:/') || url.pathname.toLowerCase().includes('/socks5:/') || url.pathname.toLowerCase().includes('/http:/')) {
+            启用SOCKS5反代 = (url.pathname.includes('/http://')) ? 'http' : 'socks5';
+            我的SOCKS5账号 = url.pathname.split('://')[1].split('#')[0];
+            if (我的SOCKS5账号.includes('@')) {
+                const lastAtIndex = 我的SOCKS5账号.lastIndexOf('@');
+                let userPassword = 我的SOCKS5账号.substring(0, lastAtIndex).replaceAll('%3D', '=');
+                const base64Regex = /^(?:[A-Z0-9+/]{4})*(?:[A-Z0-9+/]{2}==|[A-Z0-9+/]{3}=)?$/i;
+                if (base64Regex.test(userPassword) && !userPassword.includes(':')) userPassword = atob(userPassword);
+                我的SOCKS5账号 = `${userPassword}@${我的SOCKS5账号.substring(lastAtIndex + 1)}`;
+            }
+            启用SOCKS5全局反代 = true;//开启全局SOCKS5
+        }
+
+        if (我的SOCKS5账号) {
+            try {
+                获取SOCKS5账号(我的SOCKS5账号);
+                启用SOCKS5反代 = url.searchParams.get('http') ? 'http' : 启用SOCKS5反代;
+            } catch (err) {
+                启用SOCKS5反代 = null;
+            }
+        } else {
+            启用SOCKS5反代 = null;
+        }
+
+        if (url.searchParams.has('proxyip')) {
+            反代IP = url.searchParams.get('proxyip');
+            启用SOCKS5反代 = null;
+        } else if (url.pathname.toLowerCase().includes('/proxyip=')) {
+            反代IP = url.pathname.toLowerCase().split('/proxyip=')[1];
+            启用SOCKS5反代 = null;
+        } else if (url.pathname.toLowerCase().includes('/proxyip.')) {
+            反代IP = `proxyip.${url.pathname.toLowerCase().split("/proxyip.")[1]}`;
+            启用SOCKS5反代 = null;
+        } else if (url.pathname.toLowerCase().includes('/pyip=')) {
+            反代IP = url.pathname.toLowerCase().split('/pyip=')[1];
+            启用SOCKS5反代 = null;
+        } else if (url.pathname.toLowerCase().includes('/ip=')) {
+            反代IP = url.pathname.toLowerCase().split('/ip=')[1];
+            启用SOCKS5反代 = null;
+        }
+
         if (request.headers.get('Upgrade') === 'websocket') {
-            const url = new URL(request.url);
-            我的SOCKS5账号 = url.searchParams.get('socks5') || url.searchParams.get('http');
-            启用SOCKS5全局反代 = url.searchParams.has('globalproxy');
-            if (url.pathname.toLowerCase().includes('/socks5=') || (url.pathname.includes('/s5=')) || (url.pathname.includes('/gs5='))) {
-                我的SOCKS5账号 = url.pathname.split('5=')[1];
-                启用SOCKS5反代 = 'socks5';
-                启用SOCKS5全局反代 = url.pathname.includes('/gs5=') ? true : 启用SOCKS5全局反代;
-            } else if (url.pathname.toLowerCase().includes('/http=')) {
-                我的SOCKS5账号 = url.pathname.split('/http=')[1];
-                启用SOCKS5反代 = 'http';
-            } else if (url.pathname.toLowerCase().includes('/socks://') || url.pathname.toLowerCase().includes('/socks5://') || url.pathname.toLowerCase().includes('/http://')) {
-                启用SOCKS5反代 = (url.pathname.includes('/http://')) ? 'http' : 'socks5';
-                我的SOCKS5账号 = url.pathname.split('://')[1].split('#')[0];
-                if (我的SOCKS5账号.includes('@')) {
-                    const lastAtIndex = 我的SOCKS5账号.lastIndexOf('@');
-                    let userPassword = 我的SOCKS5账号.substring(0, lastAtIndex).replaceAll('%3D', '=');
-                    const base64Regex = /^(?:[A-Z0-9+/]{4})*(?:[A-Z0-9+/]{2}==|[A-Z0-9+/]{3}=)?$/i;
-                    if (base64Regex.test(userPassword) && !userPassword.includes(':')) userPassword = atob(userPassword);
-                    我的SOCKS5账号 = `${userPassword}@${我的SOCKS5账号.substring(lastAtIndex + 1)}`;
-                }
-                启用SOCKS5全局反代 = true;//开启全局SOCKS5
-            }
-
-            if (我的SOCKS5账号) {
-                try {
-                    获取SOCKS5账号(我的SOCKS5账号);
-                    启用SOCKS5反代 = url.searchParams.get('http') ? 'http' : 启用SOCKS5反代;
-                } catch (err) {
-                    启用SOCKS5反代 = null;
-                }
-            } else {
-                启用SOCKS5反代 = null;
-            }
-
-            if (url.searchParams.has('proxyip')) {
-                反代IP = url.searchParams.get('proxyip');
-                启用SOCKS5反代 = null;
-            } else if (url.pathname.toLowerCase().includes('/proxyip=')) {
-                反代IP = url.pathname.toLowerCase().split('/proxyip=')[1];
-                启用SOCKS5反代 = null;
-            } else if (url.pathname.toLowerCase().includes('/proxyip.')) {
-                反代IP = `proxyip.${url.pathname.toLowerCase().split("/proxyip.")[1]}`;
-                启用SOCKS5反代 = null;
-            } else if (url.pathname.toLowerCase().includes('/pyip=')) {
-                反代IP = url.pathname.toLowerCase().split('/pyip=')[1];
-                启用SOCKS5反代 = null;
-            } else if (url.pathname.toLowerCase().includes('/ip=')) {
-                反代IP = url.pathname.toLowerCase().split('/ip=')[1];
-                启用SOCKS5反代 = null;
-            }
-
             return await trojanOverWSHandler(request);
         } else {
             return new Response('Hello World!', { status: 200 });
@@ -446,7 +446,6 @@ async function httpConnect(addressRemote, portRemote) {
         await writer.write(new TextEncoder().encode(connectRequest));
         writer.releaseLock();
     } catch (err) {
-        console.error('发送HTTP CONNECT请求失败:', err);
         throw new Error(`发送HTTP CONNECT请求失败: ${err.message}`);
     }
 
@@ -460,7 +459,6 @@ async function httpConnect(addressRemote, portRemote) {
         while (true) {
             const { value, done } = await reader.read();
             if (done) {
-                console.error('HTTP代理连接中断');
                 throw new Error('HTTP代理连接中断');
             }
 
@@ -495,7 +493,7 @@ async function httpConnect(addressRemote, portRemote) {
 
                         // 创建一个新的TransformStream来处理额外数据
                         const { readable, writable } = new TransformStream();
-                        dataStream.pipeTo(writable).catch(err => console.error('处理剩余数据错误:', err));
+                        dataStream.pipeTo(writable).catch(() => { });
 
                         // 替换原始readable流
                         // @ts-ignore
@@ -503,7 +501,6 @@ async function httpConnect(addressRemote, portRemote) {
                     }
                 } else {
                     const errorMsg = `HTTP代理连接失败: ${headers.split('\r\n')[0]}`;
-                    console.error(errorMsg);
                     throw new Error(errorMsg);
                 }
                 break;

@@ -1,4 +1,4 @@
-const FIXED_UUID = '';// 建议修改为自己的规范化UUID，如不需要可留空
+const FIXED_UUID = '';// ws + xhttp版本
 import { connect } from 'cloudflare:sockets';
 let 反代IP = '';
 let 启用SOCKS5反代 = null;

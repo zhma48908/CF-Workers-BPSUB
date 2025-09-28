@@ -330,9 +330,9 @@ function parseUUID(uuid) {
 // SOCKS5连接
 async function socks5Connect(targetHost, targetPort) {
     const parsedSocks5Address = await 获取SOCKS5账号(我的SOCKS5账号);
-    const { username, password, host, port } = parsedSocks5Address;
+    const { username, password, hostname, port } = parsedSocks5Address;
     const sock = connect({
-        hostname: host,
+        hostname: hostname,
         port: port
     });
     await sock.opened;

@@ -59,7 +59,8 @@ export default {
                 subConverter = subConverter.split("//")[1] || subConverter;
             }
             subConfig = url.searchParams.get('subconfig') || subConfig;
-            const uuid = url.searchParams.get('uuid') || env.UUID;
+            const trojan = url.searchParams.get('trojan') || url.searchParams.has('password') || false;
+            const uuid = trojan ? url.searchParams.get('password') : (url.searchParams.get('uuid') || env.UUID);
             const uuid_json = await getLocalData(bphost, uuid);
             const xhttp = url.searchParams.get('xhttp') || false;
             let 最终路径 = url.searchParams.has('proxyip') ? `/snippets/ip=${url.searchParams.get('proxyip')}` : (proxyIP && proxyIP.trim() !== '') ? `/snippets/ip=${encodeURIComponent(proxyIP)}` : `/snippets`;
@@ -89,8 +90,8 @@ export default {
                 const selected = uuid_json[randomIndex];
                 const uuid = selected.uuid;
                 const 伪装域名 = selected.host;
-
-                let subConverterUrl = `https://${优选订阅生成器}/sub?uuid=${uuid}&host=${伪装域名}&&path=${encodeURIComponent(最终路径)}`;
+                const 验证字段名 = trojan ? 'password' : 'uuid';
+                let subConverterUrl = `https://${优选订阅生成器}/sub?${验证字段名}=${uuid}&host=${伪装域名}&path=${encodeURIComponent(最终路径)}`;
                 if (需要订阅转换的UA.some(ua => userAgent.includes(ua)) &&
                     !userAgent.includes(('CF-Workers-SUB').toLowerCase()) &&
                     !isSubConverterRequest) {
@@ -298,13 +299,16 @@ export default {
                         const selected = uuid_json[randomIndex];
                         const uuid = selected.uuid;
                         const 伪装域名 = selected.host;
-
-                        const 为烈士Link = 'vl' + 'es' + `s://${uuid}@${address}:${port}?security=tls&sni=${伪装域名}&type=ws&host=${伪装域名}&path=${encodeURIComponent(最终路径) + (跳过证书验证 ? '&allowInsecure=1' : '')}&fragment=${encodeURIComponent('1,40-60,30-50,tlshello')}&encryption=none#${encodeURIComponent(addressid + 节点备注)}`;
-                        
-                        if (xhttp) {
-                            const xhttpLink = 'vl' + 'es' + `s://${uuid}@${address}:${port}?security=tls&sni=${伪装域名}&type=xhttp&host=${伪装域名}&path=${encodeURIComponent(最终路径) + (跳过证书验证 ? '&allowInsecure=1' : '')}&mode=stream-one&fragment=${encodeURIComponent('1,40-60,30-50,tlshello')}&encryption=none#${encodeURIComponent(addressid + 节点备注 + '-XHTTP')}`;
-                            return 为烈士Link + '\n' + xhttpLink;
-                        } else return 为烈士Link;
+                        if (trojan) {
+                            const 木马Link = 'tr' + 'oj' + `an://${uuid}@${address}:${port}?security=tls&sni=${伪装域名}&type=ws&host=${伪装域名}&path=${encodeURIComponent(最终路径) + (跳过证书验证 ? '&allowInsecure=1' : '')}&fragment=${encodeURIComponent('1,40-60,30-50,tlshello')}#${encodeURIComponent(addressid + 节点备注)}`
+                            return 木马Link;
+                        } else {
+                            const 为烈士Link = 'vl' + 'es' + `s://${uuid}@${address}:${port}?security=tls&sni=${伪装域名}&type=ws&host=${伪装域名}&path=${encodeURIComponent(最终路径) + (跳过证书验证 ? '&allowInsecure=1' : '')}&fragment=${encodeURIComponent('1,40-60,30-50,tlshello')}&encryption=none#${encodeURIComponent(addressid + 节点备注)}`;
+                            if (xhttp) {
+                                const xhttpLink = 'vl' + 'es' + `s://${uuid}@${address}:${port}?security=tls&sni=${伪装域名}&type=xhttp&host=${伪装域名}&path=${encodeURIComponent(最终路径) + (跳过证书验证 ? '&allowInsecure=1' : '')}&mode=stream-one&fragment=${encodeURIComponent('1,40-60,30-50,tlshello')}&encryption=none#${encodeURIComponent(addressid + 节点备注 + '-XHTTP')}`;
+                                return 为烈士Link + '\n' + xhttpLink;
+                            } else return 为烈士Link;
+                        }
                     }
                 }).join('\n');
 

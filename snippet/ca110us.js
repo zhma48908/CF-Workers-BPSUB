@@ -417,104 +417,73 @@ function 解析地址端口(反代IP) {
     return [地址, 端口];
 }
 async function httpConnect(addressRemote, portRemote) {
-    const parsedSocks5Address = await 获取SOCKS5账号(我的SOCKS5账号);
-    const { username, password, hostname, port } = parsedSocks5Address;
-    const sock = await connect({
-        hostname: hostname,
-        port: port
-    });
+    const { username, password, hostname, port } = await 获取SOCKS5账号(我的SOCKS5账号);
+    const sock = await connect({ hostname, port });
 
     // 构建HTTP CONNECT请求
-    let connectRequest = `CONNECT ${addressRemote}:${portRemote} HTTP/1.1\r\n`;
-    connectRequest += `Host: ${addressRemote}:${portRemote}\r\n`;
+    const authHeader = username && password ? `Proxy-Authorization: Basic ${btoa(`${username}:${password}`)}\r\n` : '';
+    const connectRequest = `CONNECT ${addressRemote}:${portRemote} HTTP/1.1\r\n` +
+        `Host: ${addressRemote}:${portRemote}\r\n` +
+        authHeader +
+        `User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36\r\n` +
+        `Proxy-Connection: Keep-Alive\r\n` +
+        `Connection: Keep-Alive\r\n\r\n`;
 
-    // 添加代理认证（如果需要）
-    if (username && password) {
-        const authString = `${username}:${password}`;
-        const base64Auth = btoa(authString);
-        connectRequest += `Proxy-Authorization: Basic ${base64Auth}\r\n`;
-    }
-
-    connectRequest += `User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36\r\n`;
-    connectRequest += `Proxy-Connection: Keep-Alive\r\n`;
-    connectRequest += `Connection: Keep-Alive\r\n`; // 添加标准 Connection 头
-    connectRequest += `\r\n`;
-
+    // 发送连接请求
+    const writer = sock.writable.getWriter();
     try {
-        // 发送连接请求
-        const writer = sock.writable.getWriter();
         await writer.write(new TextEncoder().encode(connectRequest));
-        writer.releaseLock();
     } catch (err) {
         throw new Error(`发送HTTP CONNECT请求失败: ${err.message}`);
+    } finally {
+        writer.releaseLock();
     }
 
-    // 读取HTTP响应
+    // 读取并处理HTTP响应
     const reader = sock.readable.getReader();
-    let respText = '';
-    let connected = false;
     let responseBuffer = new Uint8Array(0);
 
     try {
         while (true) {
             const { value, done } = await reader.read();
-            if (done) {
-                throw new Error('HTTP代理连接中断');
-            }
+            if (done) throw new Error('HTTP代理连接中断');
 
-            // 合并接收到的数据
+            // 合并响应数据
             const newBuffer = new Uint8Array(responseBuffer.length + value.length);
             newBuffer.set(responseBuffer);
             newBuffer.set(value, responseBuffer.length);
             responseBuffer = newBuffer;
 
-            // 将收到的数据转换为文本
-            respText = new TextDecoder().decode(responseBuffer);
-
+            const respText = new TextDecoder().decode(responseBuffer);
+            
             // 检查是否收到完整的HTTP响应头
             if (respText.includes('\r\n\r\n')) {
-                // 分离HTTP头和可能的数据部分
                 const headersEndPos = respText.indexOf('\r\n\r\n') + 4;
                 const headers = respText.substring(0, headersEndPos);
 
-                // 检查响应状态
-                if (headers.startsWith('HTTP/1.1 200') || headers.startsWith('HTTP/1.0 200')) {
-                    connected = true;
+                if (!headers.startsWith('HTTP/1.1 200') && !headers.startsWith('HTTP/1.0 200')) {
+                    throw new Error(`HTTP代理连接失败: ${headers.split('\r\n')[0]}`);
+                }
 
-                    // 如果响应头之后还有数据，我们需要保存这些数据以便后续处理
-                    if (headersEndPos < responseBuffer.length) {
-                        const remainingData = responseBuffer.slice(headersEndPos);
-                        // 创建一个缓冲区来存储这些数据，以便稍后使用
-                        const dataStream = new ReadableStream({
-                            start(controller) {
-                                controller.enqueue(remainingData);
-                            }
-                        });
-
-                        // 创建一个新的TransformStream来处理额外数据
-                        const { readable, writable } = new TransformStream();
-                        dataStream.pipeTo(writable).catch(() => { });
-
-                        // 替换原始readable流
-                        // @ts-ignore
-                        sock.readable = readable;
-                    }
-                } else {
-                    const errorMsg = `HTTP代理连接失败: ${headers.split('\r\n')[0]}`;
-                    throw new Error(errorMsg);
+                // 处理响应头后的剩余数据
+                if (headersEndPos < responseBuffer.length) {
+                    const remainingData = responseBuffer.slice(headersEndPos);
+                    const { readable, writable } = new TransformStream();
+                    new ReadableStream({
+                        start(controller) {
+                            controller.enqueue(remainingData);
+                        }
+                    }).pipeTo(writable).catch(() => {});
+                    // @ts-ignore
+                    sock.readable = readable;
                 }
                 break;
             }
         }
     } catch (err) {
-        reader.releaseLock();
         throw new Error(`处理HTTP代理响应失败: ${err.message}`);
-    }
-
-    reader.releaseLock();
-
-    if (!connected) {
-        throw new Error('HTTP代理连接失败: 未收到成功响应');
+    } finally {
+        reader.releaseLock();
     }
 
     return sock;

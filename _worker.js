@@ -378,6 +378,62 @@ export default {
                     'Access-Control-Allow-Headers': 'Content-Type'
                 }
             });
+        } else if (url.pathname === '/check-version') {
+            // 检查订阅转换后端版本
+            const targetUrl = url.searchParams.get('url');
+            if (!targetUrl) {
+                return new Response(JSON.stringify({ success: false, error: 'Missing URL parameter' }), {
+                    status: 400,
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            }
+            
+            // 安全验证：检查目标URL是否在允许的订阅转换后端列表中
+            const allowedUrls = subapiList.map(item => item.value);
+            if (!allowedUrls.includes(targetUrl)) {
+                return new Response(JSON.stringify({ 
+                    success: false, 
+                    error: 'Unauthorized URL - Only predefined subscription backends are allowed' 
+                }), {
+                    status: 403,
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            }
+            
+            try {
+                const versionUrl = targetUrl + '/version';
+                const response = await fetch(versionUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'text/plain',
+                        'User-Agent': 'Mozilla/5.0 (compatible; CF-Workers-BPSUB/1.0)'
+                    }
+                });
+                
+                if (response.ok) {
+                    const versionText = await response.text();
+                    return new Response(JSON.stringify({ 
+                        success: true, 
+                        version: versionText.trim()
+                    }), {
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                } else {
+                    return new Response(JSON.stringify({ 
+                        success: false, 
+                        error: 'HTTP ' + response.status 
+                    }), {
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                }
+            } catch (error) {
+                return new Response(JSON.stringify({ 
+                    success: false, 
+                    error: error.message 
+                }), {
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            }
         } else {
             return await subHtml(request, hosts.length);
         }
@@ -957,6 +1013,121 @@ async function subHtml(request, hostLength = hosts.length) {
         
         .short-url-btn:not(:disabled)::before {
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        }
+        
+        /* 右上角气泡通知样式 */
+        #notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            max-width: 400px;
+            pointer-events: none;
+        }
+        
+        .notification {
+            background: rgba(26, 32, 44, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(0, 255, 255, 0.1);
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            opacity: 0;
+            transform: translateX(100%) translateY(-10px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: auto;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .notification::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.1) 0%, rgba(138, 43, 226, 0.1) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .notification:hover::before {
+            opacity: 1;
+        }
+        
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0) translateY(0);
+        }
+        
+        .notification.success {
+            border-color: rgba(0, 255, 157, 0.5);
+            color: #00ff9d;
+        }
+        
+        .notification.success::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, #00ff9d 0%, rgba(0, 255, 157, 0.3) 100%);
+            border-radius: 0 12px 12px 0;
+        }
+        
+        .notification.error {
+            border-color: rgba(255, 193, 7, 0.5);
+            color: #ffc107;
+        }
+        
+        .notification.error::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, #ffc107 0%, rgba(255, 193, 7, 0.3) 100%);
+            border-radius: 0 12px 12px 0;
+        }
+        
+        .notification-content {
+            position: relative;
+            z-index: 1;
+            flex: 1;
+        }
+        
+        .notification-close {
+            position: relative;
+            z-index: 1;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+        
+        .notification-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
         }
         
         .result-section {
@@ -1599,6 +1770,9 @@ async function subHtml(request, hostLength = hosts.length) {
     </style>
 </head>
 <body>
+    <!-- 右上角气泡通知容器 -->
+    <div id="notification-container"></div>
+    
     <div class="container">
         <div class="header">
             <div class="social-links-container">
@@ -2136,6 +2310,7 @@ async function subHtml(request, hostLength = hosts.length) {
                     select.value = cachedValue;
                     if (cachedValue === 'custom') {
                         input.style.display = 'block';
+                        hideSubApiStatus();
                     } else {
                         input.style.display = 'none';
                     }
@@ -2143,6 +2318,7 @@ async function subHtml(request, hostLength = hosts.length) {
                     // 如果缓存的值不在选项中，设置为自定义并显示输入框
                     select.value = 'custom';
                     input.style.display = 'block';
+                    hideSubApiStatus();
                 }
             } else {
                 // 没有缓存，默认选中CM提供-负载均衡后端
@@ -2157,12 +2333,91 @@ async function subHtml(request, hostLength = hosts.length) {
                 if (this.value === 'custom') {
                     input.style.display = 'block';
                     input.focus();
+                    hideSubApiStatus();
                 } else {
                     input.value = this.value;
                     input.style.display = 'none';
+                    checkSubApiVersion(this.value);
                 }
                 saveFormData();
             });
+        }
+        
+        // 检查订阅转换后端版本（气泡式提醒）
+        async function checkSubApiVersion(apiUrl) {
+            const statusDiv = document.getElementById('subapiStatus');
+            
+            try {
+                // 使用当前域名作为代理来检查版本，避免跨域问题
+                const proxyUrl = '/check-version?url=' + encodeURIComponent(apiUrl);
+                const response = await fetch(proxyUrl, {
+                    method: 'GET'
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        showNotification('✅ 当前订阅转换后端可用<br>📌 ' + result.version, 'success');
+                    } else {
+                        throw new Error(result.error || '检查失败');
+                    }
+                } else {
+                    throw new Error('HTTP ' + response.status);
+                }
+            } catch (error) {
+                console.error('Version check failed:', error);
+                showNotification('⚠️ 当前订阅转换后端异常 请更换订阅转换后端', 'error');
+            }
+        }
+        
+        // 显示右上角通知
+        function showNotification(message, type) {
+            if (!type) type = 'success';
+            const container = document.getElementById('notification-container');
+            
+            // 创建通知元素
+            const notification = document.createElement('div');
+            notification.className = 'notification ' + type;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'notification-content';
+            contentDiv.innerHTML = message;
+            
+            const closeBtn = document.createElement('button');
+            closeBtn.className = 'notification-close';
+            closeBtn.innerHTML = '×';
+            closeBtn.onclick = function() { closeNotification(this); };
+            
+            notification.appendChild(contentDiv);
+            notification.appendChild(closeBtn);
+            container.appendChild(notification);
+            
+            // 触发进入动画
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 10);
+            
+            // 4秒后自动移除
+            setTimeout(() => {
+                closeNotification(notification.querySelector('.notification-close'));
+            }, 4000);
+        }
+        
+        // 关闭通知
+        function closeNotification(closeBtn) {
+            const notification = closeBtn.parentElement;
+            notification.classList.remove('show');
+            
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.parentElement.removeChild(notification);
+                }
+            }, 400);
+        }
+        
+        // 隐藏状态消息（保留函数以兼容现有调用）
+        function hideSubApiStatus() {
+            // 右上角通知不需要手动隐藏
         }
         
         // 填充subconfig下拉框

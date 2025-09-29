@@ -358,6 +358,10 @@ export default {
                     headers: { 'Content-Type': 'text/plain; charset=utf-8' }
                 });
             }
+        } else if (url.pathname === '/subapi.json') {
+            return new Response(JSON.stringify(subapiList, null, 2), { headers: { 'Content-Type': 'application/json' } });
+        } else if (url.pathname === '/subconfig.json') {
+            return new Response(JSON.stringify(subConfigList, null, 2), { headers: { 'Content-Type': 'application/json' } });
         } else {
             return await subHtml(request, hosts.length);
         }
@@ -3468,3 +3472,154 @@ function encodeBase64(data) {
     const padding = 3 - (binary.length % 3 || 3);
     return base64.slice(0, base64.length - padding) + '=='.slice(0, padding);
 }
+
+const subapiList = [{
+    label: 'CM提供-负载均衡后端',
+    value: 'https://subapi.cmliussss.net'
+}, {
+    label: 'Lfree提供-负载均衡后端',
+    value: 'https://api.sub.zaoy.cn'
+}, {
+    label: '肥羊提供-增强型后端',
+    value: 'https://url.v1.mk'
+}, {
+    label: '肥羊提供-备用后端',
+    value: 'https://sub.d1.mk'
+}];
+
+const subConfigList = [{
+    label: 'ACL4SSR',
+    options: [{
+        label: 'ACL4SSR_Online 默认版 分组比较全',
+        value: 'https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online.ini'
+    }, {
+        label: 'ACL4SSR_Online_AdblockPlus 更多去广告',
+        value: 'https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_AdblockPlus.ini'
+    }, {
+        label: 'ACL4SSR_Online_MultiCountry 多国分组',
+        value: 'https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_MultiCountry.ini'
+    }, {
+        label: 'ACL4SSR_Online_NoAuto 无自动测速',
+        value: 'https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_NoAuto.ini'
+    }, {
+        label: 'ACL4SSR_Online_NoReject 无广告拦截规则',
+        value: 'https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_NoReject.ini'
+    }, {
+        label: 'ACL4SSR_Online_Mini 精简版',
+        value: 'https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Mini.ini'
+    }, {
+        label: 'ACL4SSR_Online_Mini_AdblockPlus.ini 精简版 更多去广告',
+        value: 'https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Mini_AdblockPlus.ini'
+    }, {
+        label: 'ACL4SSR_Online_Mini_NoAuto.ini 精简版 不带自动测速',
+        value: 'https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Mini_NoAuto.ini'
+    }, {
+        label: 'ACL4SSR_Online_Mini_Fallback.ini 精简版 带故障转移',
+        value: 'https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Mini_Fallback.ini'
+    }, {
+        label: 'ACL4SSR_Online_Mini_MultiMode.ini 精简版 自动测速、故障转移、负载均衡',
+        value: 'https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Mini_MultiMode.ini'
+    }, {
+        label: 'ACL4SSR_Online_Mini_MultiCountry.ini 精简版 带港美日国家',
+        value: 'https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Mini_MultiCountry.ini'
+    }, {
+        label: 'ACL4SSR_Online_Full 全分组 重度用户使用',
+        value: 'https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Full.ini'
+    }, {
+        label: 'ACL4SSR_Online_Full_MultiMode.ini 全分组 多模式 重度用户使用',
+        value: 'https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Full_MultiMode.ini'
+    }, {
+        label: 'ACL4SSR_Online_Full_NoAuto.ini 全分组 无自动测速 重度用户使用',
+        value: 'https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Full_NoAuto.ini'
+    }, {
+        label: 'ACL4SSR_Online_Full_AdblockPlus 全分组 重度用户使用 更多去广告',
+        value: 'https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Full_AdblockPlus.ini'
+    }, {
+        label: 'ACL4SSR_Online_Full_Netflix 全分组 重度用户使用 奈飞全量',
+        value: 'https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Full_Netflix.ini'
+    }, {
+        label: 'ACL4SSR_Online_Full_Google 全分组 重度用户使用 谷歌细分',
+        value: 'https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Full_Google.ini'
+    }]
+}, {
+    label: 'CM规则',
+    options: [{
+        label: 'CM_Online 默认版 识别港美地区',
+        value: 'https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/config/ACL4SSR_Online.ini'
+    }, {
+        label: 'CM_Online_MultiCountry 识别港美地区 负载均衡',
+        value: 'https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/config/ACL4SSR_Online_MultiCountry.ini'
+    }, {
+        label: 'CM_Online_MultiCountry_CF 识别港美地区、CloudFlareCDN 负载均衡 Worker节点专用',
+        value: 'https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/config/ACL4SSR_Online_MultiCountry_CF.ini'
+    }, {
+        label: 'CM_Online_Full 识别多地区分组',
+        value: 'https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/config/ACL4SSR_Online_Full.ini'
+    }, {
+        label: 'CM_Online_Full_CF 识别多地区、CloudFlareCDN 分组 Worker节点专用',
+        value: 'https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/config/ACL4SSR_Online_Full_CF.ini'
+    }, {
+        label: 'CM_Online_Full_MultiMode 识别多地区 负载均衡',
+        value: 'https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/config/ACL4SSR_Online_Full_MultiMode.ini'
+    }, {
+        label: 'CM_Online_Full_MultiMode_CF 识别多地区、CloudFlareCDN 负载均衡 Worker节点专用',
+        value: 'https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/config/ACL4SSR_Online_Full_MultiMode_CF.ini'
+    }]
+}, {
+    label: 'universal',
+    options: [{
+        label: 'No-Urltest',
+        value: 'https://cdn.jsdelivr.net/gh/SleepyHeeead/subconverter-config@master/remote-config/universal/no-urltest.ini'
+    }, {
+        label: 'Urltest',
+        value: 'https://cdn.jsdelivr.net/gh/SleepyHeeead/subconverter-config@master/remote-config/universal/urltest.ini'
+    }]
+}, {
+    label: 'customized',
+    options: [{
+        label: 'Nirvana',
+        value: 'https://raw.githubusercontent.com/Mazetsz/ACL4SSR/master/Clash/config/V2rayPro.ini'
+    }, {
+        label: 'V2Pro',
+        value: 'https://raw.githubusercontent.com/Mazeorz/airports/master/Clash/V2Pro.ini'
+    }, {
+        label: '史迪仔-自动测速',
+        value: 'https://raw.githubusercontent.com/Mazeorz/airports/master/Clash/Stitch.ini'
+    }, {
+        label: '史迪仔-负载均衡',
+        value: 'https://raw.githubusercontent.com/Mazeorz/airports/master/Clash/Stitch-Balance.ini'
+    }, {
+        label: 'Maying',
+        value: 'https://cdn.jsdelivr.net/gh/SleepyHeeead/subconverter-config@master/remote-config/customized/maying.ini'
+    }, {
+        label: 'Ytoo',
+        value: 'https://cdn.jsdelivr.net/gh/SleepyHeeead/subconverter-config@master/remote-config/customized/ytoo.ini'
+    }, {
+        label: 'FlowerCloud',
+        value: 'https://cdn.jsdelivr.net/gh/SleepyHeeead/subconverter-config@master/remote-config/customized/flowercloud.ini'
+    }, {
+        label: 'NyanCAT',
+        value: 'https://cdn.jsdelivr.net/gh/SleepyHeeead/subconverter-config@master/remote-config/customized/nyancat.ini'
+    }, {
+        label: 'Nexitally',
+        value: 'https://cdn.jsdelivr.net/gh/SleepyHeeead/subconverter-config@master/remote-config/customized/nexitally.ini'
+    }, {
+        label: 'SoCloud',
+        value: 'https://cdn.jsdelivr.net/gh/SleepyHeeead/subconverter-config@master/remote-config/customized/socloud.ini'
+    }, {
+        label: 'ARK',
+        value: 'https://cdn.jsdelivr.net/gh/SleepyHeeead/subconverter-config@master/remote-config/customized/ark.ini'
+    }, {
+        label: 'ssrCloud',
+        value: 'https://cdn.jsdelivr.net/gh/SleepyHeeead/subconverter-config@master/remote-config/customized/ssrcloud.ini'
+    }]
+}, {
+    label: 'Special',
+    options: [{
+        label: 'NeteaseUnblock(仅规则，No-Urltest)',
+        value: 'https://cdn.jsdelivr.net/gh/SleepyHeeead/subconverter-config@master/remote-config/special/netease.ini'
+    }, {
+        label: 'Basic(仅GEOIP CN + Final)',
+        value: 'https://cdn.jsdelivr.net/gh/SleepyHeeead/subconverter-config@master/remote-config/special/basic.ini'
+    }]
+}];

@@ -359,9 +359,25 @@ export default {
                 });
             }
         } else if (url.pathname === '/subapi.json') {
-            return new Response(JSON.stringify(subapiList, null, 2), { headers: { 'Content-Type': 'application/json' } });
+            return new Response(JSON.stringify(subapiList, null, 2), {
+                headers: {
+                    'Content-Type': 'application/json; charset=utf-8',
+                    'Cache-Control': 'public, max-age=604800', // 7天缓存 (7*24*3600)
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET',
+                    'Access-Control-Allow-Headers': 'Content-Type'
+                }
+            });
         } else if (url.pathname === '/subconfig.json') {
-            return new Response(JSON.stringify(subConfigList, null, 2), { headers: { 'Content-Type': 'application/json' } });
+            return new Response(JSON.stringify(subConfigList, null, 2), {
+                headers: {
+                    'Content-Type': 'application/json; charset=utf-8',
+                    'Cache-Control': 'public, max-age=604800', // 7天缓存 (7*24*3600)
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET',
+                    'Access-Control-Allow-Headers': 'Content-Type'
+                }
+            });
         } else {
             return await subHtml(request, hosts.length);
         }
@@ -1967,13 +1983,19 @@ async function subHtml(request, hostLength = hosts.length) {
                 <div class="section-content">
                     <div class="form-group">
                         <label for="subapi">订阅转换后端：</label>
-                        <input type="text" id="subapi" placeholder="${subProtocol}://${subConverter.toLowerCase()}" value="">
+                        <select id="subapiSelect" style="display: none; margin-bottom: 10px;">
+                            <option value="">正在加载...</option>
+                        </select>
+                        <input type="text" id="subapi" placeholder="${subProtocol}://${subConverter.toLowerCase()}" value="" style="display: none;">
                         <div class="example">🔄 用于将生成的VLESS链接转换为Clash/SingBox等格式的后端服务
                         </div>
                     </div>
                     <div class="form-group">
                         <label for="subconfig">订阅转换配置文件：</label>
-                        <input type="text" id="subconfig" placeholder="${subConfig}" value="">
+                        <select id="subconfigSelect" style="display: none; margin-bottom: 10px;">
+                            <option value="">正在加载...</option>
+                        </select>
+                        <input type="text" id="subconfig" placeholder="${subConfig}" value="" style="display: none;">
                         <div class="example">📋 订阅转换时使用的配置文件URL，定义规则和策略
                         </div>
                     </div>
@@ -2039,6 +2061,223 @@ async function subHtml(request, hostLength = hosts.length) {
     <script>
         // 本地存储配置
         const STORAGE_KEY = 'bpsub_form_data';
+        
+        // 全局变量存储JSON数据
+        let subApiData = null;
+        let subConfigData = null;
+        
+        // 加载JSON配置
+        async function loadJsonConfigs() {
+            try {
+                // 加载subapi.json
+                const subApiResponse = await fetch('/subapi.json');
+                if (subApiResponse.ok) {
+                    subApiData = await subApiResponse.json();
+                    populateSubApiSelect();
+                } else {
+                    console.warn('Failed to load /subapi.json:', subApiResponse.status);
+                    hideSubApiSelect();
+                }
+            } catch (error) {
+                console.error('Error loading /subapi.json:', error);
+                hideSubApiSelect();
+            }
+            
+            try {
+                // 加载subconfig.json
+                const subConfigResponse = await fetch('/subconfig.json');
+                if (subConfigResponse.ok) {
+                    subConfigData = await subConfigResponse.json();
+                    populateSubConfigSelect();
+                } else {
+                    console.warn('Failed to load /subconfig.json:', subConfigResponse.status);
+                    hideSubConfigSelect();
+                }
+            } catch (error) {
+                console.error('Error loading /subconfig.json:', error);
+                hideSubConfigSelect();
+            }
+        }
+        
+        // 填充subapi下拉框
+        function populateSubApiSelect() {
+            const select = document.getElementById('subapiSelect');
+            const input = document.getElementById('subapi');
+            
+            if (!subApiData || !Array.isArray(subApiData)) {
+                hideSubApiSelect();
+                return;
+            }
+            
+            // 清空现有选项
+            select.innerHTML = '';
+            
+            // 添加选项
+            subApiData.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.value;
+                option.textContent = item.label;
+                select.appendChild(option);
+            });
+            
+            // 添加"自定义"选项
+            const customOption = document.createElement('option');
+            customOption.value = 'custom';
+            customOption.textContent = '自定义';
+            select.appendChild(customOption);
+            
+            // 显示下拉框
+            select.style.display = 'block';
+            
+            // 检查是否有缓存的值需要设置
+            const cachedValue = input.value;
+            if (cachedValue) {
+                if (cachedValue === 'custom' || subApiData.some(item => item.value === cachedValue)) {
+                    select.value = cachedValue;
+                    if (cachedValue === 'custom') {
+                        input.style.display = 'block';
+                    } else {
+                        input.style.display = 'none';
+                    }
+                } else {
+                    // 如果缓存的值不在选项中，设置为自定义并显示输入框
+                    select.value = 'custom';
+                    input.style.display = 'block';
+                }
+            } else {
+                // 没有缓存，默认选中CM提供-负载均衡后端
+                const defaultValue = 'https://subapi.cmliussss.net';
+                select.value = defaultValue;
+                input.value = defaultValue;
+                input.style.display = 'none';
+            }
+            
+            // 绑定change事件
+            select.addEventListener('change', function() {
+                if (this.value === 'custom') {
+                    input.style.display = 'block';
+                    input.focus();
+                } else {
+                    input.value = this.value;
+                    input.style.display = 'none';
+                }
+                saveFormData();
+            });
+        }
+        
+        // 填充subconfig下拉框
+        function populateSubConfigSelect() {
+            const select = document.getElementById('subconfigSelect');
+            const input = document.getElementById('subconfig');
+            
+            if (!subConfigData || !Array.isArray(subConfigData)) {
+                hideSubConfigSelect();
+                return;
+            }
+            
+            // 清空现有选项
+            select.innerHTML = '';
+            
+            // 添加选项（嵌套结构）
+            subConfigData.forEach(group => {
+                if (group.label && group.options && Array.isArray(group.options)) {
+                    // 创建optgroup
+                    const optgroup = document.createElement('optgroup');
+                    optgroup.label = group.label;
+                    
+                    group.options.forEach(option => {
+                        const optionElement = document.createElement('option');
+                        optionElement.value = option.value;
+                        optionElement.textContent = option.label;
+                        optgroup.appendChild(optionElement);
+                    });
+                    
+                    select.appendChild(optgroup);
+                }
+            });
+            
+            // 添加"自定义"选项
+            const customOption = document.createElement('option');
+            customOption.value = 'custom';
+            customOption.textContent = '自定义';
+            select.appendChild(customOption);
+            
+            // 显示下拉框
+            select.style.display = 'block';
+            
+            // 检查是否有缓存的值需要设置
+            const cachedValue = input.value;
+            if (cachedValue) {
+                if (cachedValue === 'custom' || isValueInSubConfigData(cachedValue)) {
+                    select.value = cachedValue;
+                    if (cachedValue === 'custom') {
+                        input.style.display = 'block';
+                    } else {
+                        input.style.display = 'none';
+                    }
+                } else {
+                    // 如果缓存的值不在选项中，设置为自定义并显示输入框
+                    select.value = 'custom';
+                    input.style.display = 'block';
+                }
+            } else {
+                // 没有缓存，默认选中ACL4SSR_Online_Mini_MultiMode.ini
+                const defaultValue = 'https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Mini_MultiMode.ini';
+                select.value = defaultValue;
+                input.value = defaultValue;
+                input.style.display = 'none';
+            }
+            
+            // 绑定change事件
+            select.addEventListener('change', function() {
+                if (this.value === 'custom') {
+                    input.style.display = 'block';
+                    input.focus();
+                } else {
+                    input.value = this.value;
+                    input.style.display = 'none';
+                }
+                saveFormData();
+            });
+        }
+        
+        // 检查值是否在subConfigData中
+        function isValueInSubConfigData(value) {
+            if (!subConfigData || !Array.isArray(subConfigData)) return false;
+            
+            for (const group of subConfigData) {
+                if (group.options && Array.isArray(group.options)) {
+                    if (group.options.some(option => option.value === value)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        
+        // 隐藏subapi下拉框
+        function hideSubApiSelect() {
+            const select = document.getElementById('subapiSelect');
+            const input = document.getElementById('subapi');
+            if (select) {
+                select.style.display = 'none';
+            }
+            if (input) {
+                input.style.display = 'block';
+            }
+        }
+        
+        // 隐藏subconfig下拉框
+        function hideSubConfigSelect() {
+            const select = document.getElementById('subconfigSelect');
+            const input = document.getElementById('subconfig');
+            if (select) {
+                select.style.display = 'none';
+            }
+            if (input) {
+                input.style.display = 'block';
+            }
+        }
         
         // 保存表单数据到localStorage
         function saveFormData() {
@@ -2193,8 +2432,45 @@ async function subHtml(request, hostLength = hosts.length) {
                         saveTimeout = setTimeout(saveFormData, 1000); // 1秒后保存
                     };
                     
-                    // 为proxyHost和subGenerator添加特殊的域名提取处理
-                    if (fieldId === 'proxyHost' || fieldId === 'subGenerator') {
+                    // 为subapi和subconfig添加特殊处理：同步更新下拉框
+                    if (fieldId === 'subapi' || fieldId === 'subconfig') {
+                        element.addEventListener('input', function() {
+                            // 同步更新对应的下拉框
+                            const selectId = fieldId + 'Select';
+                            const select = document.getElementById(selectId);
+                            if (select && select.style.display !== 'none') {
+                                // 如果输入的值不在预设选项中，设置为自定义
+                                const isInOptions = fieldId === 'subapi' 
+                                    ? (subApiData && subApiData.some(item => item.value === this.value))
+                                    : isValueInSubConfigData(this.value);
+                                
+                                if (!isInOptions && this.value.trim() !== '') {
+                                    select.value = 'custom';
+                                } else if (isInOptions) {
+                                    select.value = this.value;
+                                }
+                            }
+                            debouncedSave();
+                        });
+                        element.addEventListener('change', function() {
+                            // 同步更新对应的下拉框
+                            const selectId = fieldId + 'Select';
+                            const select = document.getElementById(selectId);
+                            if (select && select.style.display !== 'none') {
+                                // 如果输入的值不在预设选项中，设置为自定义
+                                const isInOptions = fieldId === 'subapi' 
+                                    ? (subApiData && subApiData.some(item => item.value === this.value))
+                                    : isValueInSubConfigData(this.value);
+                                
+                                if (!isInOptions && this.value.trim() !== '') {
+                                    select.value = 'custom';
+                                } else if (isInOptions) {
+                                    select.value = this.value;
+                                }
+                            }
+                            saveFormData();
+                        });
+                    } else if (fieldId === 'proxyHost' || fieldId === 'subGenerator') {
                         element.addEventListener('input', function() {
                             // 清除之前的定时器
                             clearTimeout(this._extractTimeout);
@@ -3316,6 +3592,9 @@ async function subHtml(request, hostLength = hosts.length) {
             // 首先加载缓存的表单数据
             loadFormData();
             
+            // 加载JSON配置文件
+            loadJsonConfigs();
+            
             // 设置自动保存功能
             setupAutoSave();
             
@@ -3474,16 +3753,19 @@ function encodeBase64(data) {
 }
 
 const subapiList = [{
-    label: 'CM提供-负载均衡后端',
+    label: '🔄 CM提供-负载均衡后端',
     value: 'https://subapi.cmliussss.net'
 }, {
-    label: 'Lfree提供-负载均衡后端',
+    label: '⚖️ Lfree提供-负载均衡后端',
     value: 'https://api.sub.zaoy.cn'
 }, {
-    label: '肥羊提供-增强型后端',
+    label: '🎭 周润发提供-后端',
+    value: 'https://subapi.zrfme.com'
+}, {
+    label: '🐑 肥羊提供-增强型后端',
     value: 'https://url.v1.mk'
 }, {
-    label: '肥羊提供-备用后端',
+    label: '🔄 肥羊提供-备用后端',
     value: 'https://sub.d1.mk'
 }];
 

@@ -59,8 +59,8 @@ export default {
                 subConverter = subConverter.split("//")[1] || subConverter;
             }
             subConfig = url.searchParams.get('subconfig') || subConfig;
-            const trojan = url.searchParams.get('trojan') || url.searchParams.has('password') || false;
-            const uuid = trojan ? url.searchParams.get('password') : (url.searchParams.get('uuid') || env.UUID);
+            const trojan = url.searchParams.get('trojan') || false;
+            const uuid = url.searchParams.get('uuid') || env.UUID;
             const uuid_json = await getLocalData(bphost, uuid);
             const xhttp = url.searchParams.get('xhttp') || false;
             let 最终路径 = url.searchParams.has('proxyip') ? `/snippets/ip=${url.searchParams.get('proxyip')}` : (proxyIP && proxyIP.trim() !== '') ? `/snippets/ip=${encodeURIComponent(proxyIP)}` : `/snippets`;
@@ -2305,9 +2305,10 @@ async function subHtml(request, hostLength = hosts.length) {
             // 保存当前表单数据
             saveFormData();
             
-            // 获取当前域名
+            // 获取当前域名和协议
             const currentDomain = window.location.host;
-            let url = \`https://\${currentDomain}/sub\`;
+            const currentProtocol = window.location.protocol || 'https:'; // 获取当前协议 (http: 或 https:)
+            let url = \`\${currentProtocol}//\${currentDomain}/sub\`;
             
             const params = new URLSearchParams();
             

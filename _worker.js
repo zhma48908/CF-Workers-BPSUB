@@ -59,8 +59,8 @@ export default {
                 subConverter = subConverter.split("//")[1] || subConverter;
             }
             subConfig = url.searchParams.get('subconfig') || subConfig;
-            const trojan = url.searchParams.get('trojan') || url.searchParams.has('password') || false;
-            const uuid = trojan ? url.searchParams.get('password') : (url.searchParams.get('uuid') || env.UUID);
+            const trojan = url.searchParams.get('trojan') || false;
+            const uuid = url.searchParams.get('uuid') || env.UUID;
             const uuid_json = await getLocalData(bphost, uuid);
             const xhttp = url.searchParams.get('xhttp') || false;
             let 最终路径 = url.searchParams.has('proxyip') ? `/snippets/ip=${url.searchParams.get('proxyip')}` : (proxyIP && proxyIP.trim() !== '') ? `/snippets/ip=${encodeURIComponent(proxyIP)}` : `/snippets`;
@@ -1977,7 +1977,7 @@ async function subHtml(request, hostLength = hosts.length) {
             </div>
             
             <!-- 高级参数设置 -->
-            <div class="section collapsible collapsed">
+            <div class="section collapsible">
                 <div class="section-title" onclick="toggleSection(this)">🔧 节点高级设置</div>
                 <div class="section-content">
                     <div class="form-group">
@@ -1995,7 +1995,9 @@ async function subHtml(request, hostLength = hosts.length) {
                         <div class="example">⚙️ 高级参数说明：
 • ed=2560：启用0-RTT
 • scv：跳过TLS证书验证，适用于双向解析的免费域名
-• 注意：天书13源码不支持ed参数配置
+• xhttp：使用XHTTP协议必须保证域名开启gRPC支持
+• trojan：使用trojan协议并开启验证UUID的话，要求在当前页面填写正确的UUID后再点击复制源码
+• 天书13：不支持ed参数配置
                         </div>
                     </div>
                 </div>
@@ -2058,6 +2060,8 @@ async function subHtml(request, hostLength = hosts.length) {
                 enableEd: document.getElementById('enableEd') ? document.getElementById('enableEd').checked : false,
                 skipCertVerify: document.getElementById('skipCertVerify') ? document.getElementById('skipCertVerify').checked : false,
                 activeTab: currentTab, // 保存当前选中的选项卡
+                // 保存所有可折叠section的状态
+                sectionStates: getSectionStates(),
                 timestamp: Date.now()
             };
             
@@ -2144,6 +2148,11 @@ async function subHtml(request, hostLength = hosts.length) {
                     document.getElementById('globalHttp').dispatchEvent(new Event('change'));
                 }
                 
+                // 恢复section折叠/展开状态
+                if (formData.sectionStates) {
+                    applySectionStates(formData.sectionStates);
+                }
+
                 // 设置高级参数选项
                 if (formData.enableEd !== undefined && document.getElementById('enableEd')) {
                     document.getElementById('enableEd').checked = formData.enableEd;
@@ -2296,9 +2305,10 @@ async function subHtml(request, hostLength = hosts.length) {
             // 保存当前表单数据
             saveFormData();
             
-            // 获取当前域名
+            // 获取当前域名和协议
             const currentDomain = window.location.host;
-            let url = \`https://\${currentDomain}/sub\`;
+            const currentProtocol = window.location.protocol || 'https:'; // 获取当前协议 (http: 或 https:)
+            let url = \`\${currentProtocol}//\${currentDomain}/sub\`;
             
             const params = new URLSearchParams();
             
@@ -2633,10 +2643,47 @@ async function subHtml(request, hostLength = hosts.length) {
             }
         }
         
+        // 获取所有可折叠section的状态
+        function getSectionStates() {
+            const states = {};
+            const sections = document.querySelectorAll('.section.collapsible');
+            sections.forEach((section, index) => {
+                const titleElement = section.querySelector('.section-title');
+                if (titleElement) {
+                    const title = titleElement.textContent.trim();
+                    states[title] = !section.classList.contains('collapsed');
+                }
+            });
+            return states;
+        }
+
+        // 应用section状态
+        function applySectionStates(states) {
+            if (!states) return;
+            
+            const sections = document.querySelectorAll('.section.collapsible');
+            sections.forEach((section, index) => {
+                const titleElement = section.querySelector('.section-title');
+                if (titleElement) {
+                    const title = titleElement.textContent.trim();
+                    if (states.hasOwnProperty(title)) {
+                        const shouldBeExpanded = states[title];
+                        if (shouldBeExpanded) {
+                            section.classList.remove('collapsed');
+                        } else {
+                            section.classList.add('collapsed');
+                        }
+                    }
+                }
+            });
+        }
+
         // 折叠功能
         function toggleSection(element) {
             const section = element.parentElement;
             section.classList.toggle('collapsed');
+            // 状态改变后保存到缓存
+            saveFormData();
         }
         
         // 选项卡切换函数

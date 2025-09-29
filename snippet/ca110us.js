@@ -16,7 +16,7 @@ export default {
         } else if (url.pathname.toLowerCase().includes('/http=')) {
             我的SOCKS5账号 = url.pathname.split('/http=')[1];
             启用SOCKS5反代 = 'http';
-        } else if (url.pathname.toLowerCase().includes('/socks:/') || url.pathname.toLowerCase().includes('/socks5:/') || url.pathname.toLowerCase().includes('/http:/')) {
+        } else if (url.pathname.toLowerCase().includes('/socks://') || url.pathname.toLowerCase().includes('/socks5://') || url.pathname.toLowerCase().includes('/http://')) {
             启用SOCKS5反代 = (url.pathname.includes('/http://')) ? 'http' : 'socks5';
             我的SOCKS5账号 = url.pathname.split('://')[1].split('#')[0];
             if (我的SOCKS5账号.includes('@')) {

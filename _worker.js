@@ -602,7 +602,7 @@ async function subHtml(request, hostLength = hosts.length) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BPSUB 订阅生成器</title>
+    <title>${FileName} Snipaste订阅生成器</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -1806,7 +1806,7 @@ async function subHtml(request, hostLength = hosts.length) {
                     </svg>
                 </a>
             </div>
-            <h1>🚀 BPSUB</h1>
+            <h1>🚀 ${FileName}</h1>
             <p>Cloudflare Snipaste 订阅生成器</p>
         </div>
         

@@ -401,7 +401,7 @@ export default {
             }
             
             try {
-                const versionUrl = targetUrl + '/version';
+                const versionUrl = targetUrl == 'default' ? `${subProtocol}://${subConverter.toLowerCase()}/version` : targetUrl + '/version';
                 const response = await fetch(versionUrl, {
                     method: 'GET',
                     headers: {
@@ -2321,8 +2321,8 @@ async function subHtml(request, hostLength = hosts.length) {
                     hideSubApiStatus();
                 }
             } else {
-                // 没有缓存，默认选中CM提供-负载均衡后端
-                const defaultValue = 'https://subapi.cmliussss.net';
+                // 没有缓存，默认选中内置默认后端
+                const defaultValue = 'default';
                 select.value = defaultValue;
                 input.value = defaultValue;
                 input.style.display = 'none';
@@ -2337,7 +2337,10 @@ async function subHtml(request, hostLength = hosts.length) {
                 } else {
                     input.value = this.value;
                     input.style.display = 'none';
-                    checkSubApiVersion(this.value);
+                    // 只有非默认后端才检查版本
+                    if (this.value !== 'default') {
+                        checkSubApiVersion(this.value);
+                    }
                 }
                 saveFormData();
             });
@@ -2476,8 +2479,8 @@ async function subHtml(request, hostLength = hosts.length) {
                     input.style.display = 'block';
                 }
             } else {
-                // 没有缓存，默认选中ACL4SSR_Online_Mini_MultiMode.ini
-                const defaultValue = 'https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Mini_MultiMode.ini';
+                // 没有缓存，默认选中BPSUB内置默认规则
+                const defaultValue = 'default';
                 select.value = defaultValue;
                 input.value = defaultValue;
                 input.style.display = 'none';
@@ -2921,13 +2924,13 @@ async function subHtml(request, hostLength = hosts.length) {
                 }
             }
             
-            // 处理订阅转换后端
-            if (subapi) {
+            // 处理订阅转换后端（当选择内置默认后端时不添加参数）
+            if (subapi && subapi !== '${subProtocol}://${subConverter.toLowerCase()}') {
                 params.append('subapi', subapi);
             }
             
-            // 处理订阅转换配置
-            if (subconfig) {
+            // 处理订阅转换配置（当选择内置默认规则时不添加参数）
+            if (subconfig && subconfig !== '${subConfig}') {
                 params.append('subconfig', subconfig);
             }
             
@@ -4008,23 +4011,32 @@ function encodeBase64(data) {
 }
 
 const subapiList = [{
+    label: `🛡️ ${FileName}-默认内置后端`,
+    value: `${subProtocol}://${subConverter.toLowerCase()}`
+}, {
     label: '🔄 CM提供-负载均衡后端',
     value: 'https://subapi.cmliussss.net'
 }, {
     label: '⚖️ Lfree提供-负载均衡后端',
     value: 'https://api.sub.zaoy.cn'
 }, {
-    label: '🎭 周润发提供-后端',
+    label: '🚀 周润发提供-后端',
     value: 'https://subapi.zrfme.com'
 }, {
     label: '🐑 肥羊提供-增强型后端',
     value: 'https://url.v1.mk'
 }, {
-    label: '🔄 肥羊提供-备用后端',
+    label: '🎭 肥羊提供-备用后端',
     value: 'https://sub.d1.mk'
 }];
 
 const subConfigList = [{
+    label: 'BPSUB',
+    options: [{
+        label: `${FileName} 默认内置规则`,
+        value: subConfig
+    }]
+}, {
     label: 'ACL4SSR',
     options: [{
         label: 'ACL4SSR_Online 默认版 分组比较全',

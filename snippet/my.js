@@ -77,7 +77,7 @@ async function handleXhttp(request) {
     if (!vlessHeader) return new Response('Invalid VLESS header', {
         status: 400
     });
-
+    if (vlessHeader.hostname.includes(atob('c3BlZWQuY2xvdWRmbGFyZS5jb20='))) throw new Error('Access');
     // 连接到远程
     let remote = null;
     if (启用SOCKS5反代 == 'socks5' && 启用SOCKS5全局反代) {
@@ -223,7 +223,7 @@ async function handleWebSocket(request) {
                 for (let i = 0; i < 8; i++, pos += 2) ipv6.push(view.getUint16(pos).toString(16));
                 addr = ipv6.join(':');
             } else return;
-
+            if (addr.includes(atob('c3BlZWQuY2xvdWRmbGFyZS5jb20='))) throw new Error('Access');
             const header = new Uint8Array([data[0], 0]);
             const payload = data.slice(pos);
 

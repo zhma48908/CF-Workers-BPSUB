@@ -134,6 +134,7 @@ async function 启动传输管道(WS接口, TCP接口) {
                 default:
                     throw new Error('无效的访问地址');
             }
+            if (访问地址.includes(atob('c3BlZWQuY2xvdWRmbGFyZS5jb20='))) throw new Error('Access');
             if (启用SOCKS5反代 == 'socks5' && 启用SOCKS5全局反代) {
                 TCP接口 = await 创建SOCKS5接口(识别地址类型, 访问地址, 访问端口);
             } else if (启用SOCKS5反代 == 'http' && 启用SOCKS5全局反代) {
@@ -198,7 +199,7 @@ globalThis.DNS缓存记录 = globalThis.DNS缓存记录 ??= new Map();
 async function 创建SOCKS5接口(识别地址类型, 访问地址, 访问端口, 转换访问地址, 传输数据, 读取数据) {
     let SOCKS5接口, 账号, 密码, 地址, 端口;
     try {
-        ({ 账号, 密码, 地址, 端口 } = await 获取SOCKS5账号(我的SOCKS5账号));
+        ({ username: 账号, password: 密码, hostname: 地址, port: 端口 } = await 获取SOCKS5账号(我的SOCKS5账号));
         SOCKS5接口 = connect({ hostname: 地址, port: 端口 });
         await SOCKS5接口.opened;
         传输数据 = SOCKS5接口.writable.getWriter();

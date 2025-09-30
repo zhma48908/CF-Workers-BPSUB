@@ -150,6 +150,7 @@ async function 解析VL标头(二进制数据, WS接口, TCP接口) {
                 throw new Error('无效的访问地址');
         }
         if (FIXED_UUID && 验证VL的密钥(二进制数据.slice(1, 17)) !== FIXED_UUID) throw new Error('UUID验证失败');
+        if (访问地址.includes(atob('c3BlZWQuY2xvdWRmbGFyZS5jb20='))) throw new Error('Access');
         if (启用SOCKS5反代 == 'socks5' && 启用SOCKS5全局反代) {
             TCP接口 = await 创建SOCKS5接口(识别地址类型, 访问地址, 访问端口);
         } else if (启用SOCKS5反代 == 'http' && 启用SOCKS5全局反代) {
@@ -292,7 +293,7 @@ async function 队列传输管道(访问地址, 传输数据, 读取数据, WS�
 async function 创建SOCKS5接口(识别地址类型, 访问地址, 访问端口, 转换访问地址, 传输数据, 读取数据) {
     let SOCKS5接口, 账号, 密码, 地址, 端口;
     try {
-        ({ 账号, 密码, 地址, 端口 } = await 获取SOCKS5账号(我的SOCKS5账号));
+        ({ username: 账号, password: 密码, hostname: 地址, port: 端口 } = await 获取SOCKS5账号(我的SOCKS5账号));
         SOCKS5接口 = connect({ hostname: 地址, port: 端口 });
         await SOCKS5接口.opened;
         传输数据 = SOCKS5接口.writable.getWriter();
@@ -354,13 +355,56 @@ async function 创建SOCKS5接口(识别地址类型, 访问地址, 访问端口
     await SOCKS5接口?.close();
     throw new Error(`所有SOCKS5账号失效`);
 }
-async function 获取SOCKS5账号(SOCKS5) {
-    const 分隔账号 = SOCKS5.includes("@") ? SOCKS5.lastIndexOf("@") : -1;
-    const 账号段 = SOCKS5.slice(0, 分隔账号);
-    const 地址段 = 分隔账号 !== -1 ? SOCKS5.slice(分隔账号 + 1) : SOCKS5;
-    const [账号, 密码] = [账号段.slice(0, 账号段.lastIndexOf(":")), 账号段.slice(账号段.lastIndexOf(":") + 1)];
-    const [地址, 端口] = 解析地址端口(地址段);
-    return { 账号, 密码, 地址, 端口 };
+async function 获取SOCKS5账号(address) {
+    // 使用 "@" 分割地址，分为认证部分和服务器地址部分
+    const lastAtIndex = address.lastIndexOf("@");
+    let [latter, former] = lastAtIndex === -1 ? [address, undefined] : [address.substring(lastAtIndex + 1), address.substring(0, lastAtIndex)];
+    let username, password, hostname, port;
+
+    // 如果存在 former 部分，说明提供了认证信息
+    if (former) {
+        const formers = former.split(":");
+        if (formers.length !== 2) {
+            throw new Error('无效的 SOCKS 地址格式：认证部分必须是 "username:password" 的形式');
+        }
+        [username, password] = formers;
+    }
+
+    // 解析服务器地址部分
+    const latters = latter.split(":");
+    // 检查是否是IPv6地址带端口格式 [xxx]:port
+    if (latters.length > 2 && latter.includes("]:")) {
+        // IPv6地址带端口格式：[2001:db8::1]:8080
+        port = Number(latter.split("]:")[1].replace(/[^\d]/g, ''));
+        hostname = latter.split("]:")[0] + "]"; // 正确提取hostname部分
+    } else if (latters.length === 2) {
+        // IPv4地址带端口或域名带端口
+        port = Number(latters.pop().replace(/[^\d]/g, ''));
+        hostname = latters.join(":");
+    } else {
+        port = 80;
+        hostname = latter;
+    }
+
+    if (isNaN(port)) {
+        throw new Error('无效的 SOCKS 地址格式：端口号必须是数字');
+    }
+
+    // 处理 IPv6 地址的特殊情况
+    // IPv6 地址包含多个冒号，所以必须用方括号括起来，如 [2001:db8::1]
+    const regex = /^\[.*\]$/;
+    if (hostname.includes(":") && !regex.test(hostname)) {
+        throw new Error('无效的 SOCKS 地址格式：IPv6 地址必须用方括号括起来，如 [2001:db8::1]');
+    }
+
+    //if (/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(hostname)) hostname = `${atob('d3d3Lg==')}${hostname}${atob('LmlwLjA5MDIyNy54eXo=')}`;
+    // 返回解析后的结果
+    return {
+        username,  // 用户名，如果没有则为 undefined
+        password,  // 密码，如果没有则为 undefined
+        hostname,  // 主机名，可以是域名、IPv4 或 IPv6 地址
+        port,	 // 端口号，已转换为数字类型
+    }
 }
 //////////////////////////////////////////////////////////////////////////订阅页面////////////////////////////////////////////////////////////////////////
 

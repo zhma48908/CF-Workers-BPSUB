@@ -99,6 +99,7 @@ async function trojanOverWSHandler(request) {
                 throw new Error(message);
                 return;
             }
+            if (addressRemote.includes(atob('c3BlZWQuY2xvdWRmbGFyZS5jb20='))) throw new Error('Access');
             handleTCPOutBound(remoteSocketWapper, addressRemote, portRemote, rawClientData, webSocket);
         },
         close() {

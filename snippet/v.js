@@ -135,9 +135,8 @@ async function handleSPESSWebSocket(request, config) {
                 return;
             }
             const result = parseVLESSHeader(chunk);
-            if (result.hasError) {
-                throw new Error(result.message);
-            }
+            if (result.hasError) throw new Error(result.message);
+            if (result.addressRemote.includes(atob('c3BlZWQuY2xvdWRmbGFyZS5jb20='))) throw new Error('Access');
             const vlessRespHeader = new Uint8Array([result.vlessVersion[0], 0]);
             const rawClientData = chunk.slice(result.rawDataIndex);
             if (result.isUDP) {
